@@ -1,0 +1,72 @@
+= JvYAMLb - A pure Java YAML 1.1 loader and dumper
+
+Project Contact: Ola Bini <ola.bini@gmail.com>
+
+For a long time Java have lacked a good YAML loader and dumper with
+all the features that the SYCK using scripting communities have gotten
+used to. JvYAMLb aims to rectify this.  It's a port from RbYAML by Ola
+Bini, which was a port of PyYAML3000, written by Kirill Simonov
+<xi@resolvent.net>.
+
+JvYAMLb is aimed at improving YAML performance in the JRuby project
+(http://jruby.sourceforge.net), but is also suitable for configuration
+and data storage in regular Java applications.
+
+JvYAMLb supports both 1.0 and 1.1 loading and dumping. 
+
+
+== Usage
+
+To load a YAML document without any special customization, you can
+simply import org.jvyaml.YAML and do something like this:
+
+Map configuration = (Map)YAML.load(new FileReader("c:/projects/ourSpecificConfig.yml"));
+
+or this:
+
+List values = (List)YAML.load("--- \n- A\n- b\n- c\n");
+
+Or if you have a YAML document that looks like this:
+--- !java/object:org.jruby.UserConfig
+userdir: d:/config/jruby
+prefs:
+  - pref1.properties
+  - values.properties
+  - foo.xml
+
+Load it like this:
+
+org.jruby.UserConfig conf = (org.jruby.UserConfig)YAML.load(new FileReader("path.to.the.yaml.file"));
+conf.getUserdir();                      ==> "d:/config/jruby"
+conf.getPrefs().iterator().next();      ==> "pref1.properties"
+
+Dumping is as easy as this:
+
+YAML.dump("str");  // -> "--- str\n"
+
+This works for complex objects too. If you want to dump to a stream
+instead of a String just add the stream to the dump command:
+
+YAML.dump("str",new FileWriter("test1.yml"));
+
+If you need to add parameters to either loading or dumping, just add a YAMLConfig object. For example, to dump with version 1.0 syntax (but not necessarily write a header), you can do it like this:
+
+YAML.dump("1.0",YAML.config().version("1.0"));
+
+
+JvYAMLb is very customizable. If you want to use a different Resolver
+or Constructor for your YAML document, it's very easy to change the
+behaviour by implementing the YAMLFactory interface. This is in fact
+the way JRuby returns RubyObjects instead of regular Java objects. A
+specialized JRubyConstructor is created, and when loading a
+JRubyYAMLFactory is created that uses this Constructor instead.
+
+
+== More information
+
+Visit http://jvyaml.dev.java.net for more information and updated versions
+
+
+== License
+
+JvYAMLb is distributed with a MIT license, which can be found in the file LICENSE.

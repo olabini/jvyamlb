@@ -230,8 +230,6 @@ public class ScannerImpl implements Scanner {
         STUPID_CHAR[']'] = false;
         STUPID_CHAR['{'] = false;
         STUPID_CHAR['#'] = false;
-        STUPID_CHAR['&'] = false;
-        STUPID_CHAR['*'] = false;
         STUPID_CHAR['!'] = false;
         STUPID_CHAR['|'] = false;
         STUPID_CHAR['\''] = false;
@@ -518,8 +516,8 @@ public class ScannerImpl implements Scanner {
                 return fetchFlowEntry();
             }
             break;
-        case '*': return fetchAlias();
-        case '&': return fetchAnchor();
+        case '*': if(ALPHA[peek(1)]) { return fetchAlias(); } break;
+        case '&': if(ALPHA[peek(1)]) { return fetchAnchor(); } break;
         case '!': return fetchTag();
         case '|': if(this.flowLevel == 0 && CHOMPING[peek(1)]) { return fetchLiteral(); } break;
         case '>': if(this.flowLevel == 0 && CHOMPING[peek(1)]) { return fetchFolded(); } break;

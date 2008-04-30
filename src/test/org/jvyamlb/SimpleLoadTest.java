@@ -12,6 +12,8 @@ import org.jruby.util.ByteList;
 
 import org.joda.time.DateTime;
 
+import org.jvyamlb.exceptions.ScannerException;
+
 /**
  *
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -117,5 +119,27 @@ public class SimpleLoadTest extends YAMLTestCase {
         expected = new HashMap();
         expected.put(s("foo"), s("bar"));
         assertLoad(expected, "---\nfoo: \tbar");
+    }
+
+    public void testLoadOfAsterisk() throws Exception {
+        assertLoad(s("*.rb"), "--- \n*.rb"); 
+        assertLoad(s("*.rb"), "--- \n'*.rb'");
+
+        assertLoad(s("&.rb"), "--- \n&.rb"); 
+        assertLoad(s("&.rb"), "--- \n'&.rb'");
+        
+        try {
+            assertLoad(null, "--- \n*r.b");
+            assertTrue(false);
+        } catch(ScannerException e) {
+            assertTrue(true);
+        }
+
+        try {
+            assertLoad(null, "--- \n&r.b");
+            assertTrue(false);
+        } catch(ScannerException e) {
+            assertTrue(true);
+        }
     }
 }// SimpleLoadTest

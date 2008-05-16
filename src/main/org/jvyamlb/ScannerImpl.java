@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.jvyamlb.exceptions.ScannerException;
 import org.jvyamlb.exceptions.YAMLException;
@@ -272,7 +273,7 @@ public class ScannerImpl implements Scanner {
         this.buffer = new ByteList(100);
         this.tokens = new LinkedList();
         this.indents = new LinkedList();
-        this.possibleSimpleKeys = new HashMap();
+        this.possibleSimpleKeys = new TreeMap();
         fetchStreamStart();
     }
 
@@ -281,7 +282,7 @@ public class ScannerImpl implements Scanner {
         this.stream = null;
         this.tokens = new LinkedList();
         this.indents = new LinkedList();
-        this.possibleSimpleKeys = new HashMap();
+        this.possibleSimpleKeys = new TreeMap();
         fetchStreamStart();
     }
 
@@ -294,7 +295,7 @@ public class ScannerImpl implements Scanner {
         this.stream = null;
         this.tokens = new LinkedList();
         this.indents = new LinkedList();
-        this.possibleSimpleKeys = new HashMap();
+        this.possibleSimpleKeys = new TreeMap();
         fetchStreamStart();
     }
 
@@ -544,7 +545,7 @@ public class ScannerImpl implements Scanner {
     private Token fetchStreamEnd() {
         unwindIndent(-1);
         this.allowSimpleKey = false;
-        this.possibleSimpleKeys = new HashMap();
+        this.possibleSimpleKeys = new TreeMap();
         this.tokens.add(Token.STREAM_END);
         this.done = true;
         this.docStart = false;

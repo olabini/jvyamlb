@@ -5,6 +5,8 @@ package org.jvyamlb;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jvyamlb.exceptions.ParserException;
 
@@ -86,5 +88,38 @@ public class YAMLLoadTest extends YAMLTestCase {
         org.joda.time.DateTime dt = new org.joda.time.DateTime(1982,5,3,0,0,0,0);
         final TestBean expected = new TestBean(s("Ola Bini"), 24, dt);
         assertLoad(expected, "--- !java/object:org.jvyamlb.TestBean\nname: Ola Bini\nage: 24\nborn: 1982-05-03\n");
+    }
+
+    public void testFlowSequenceWithFlowMappingLoad() throws Exception {
+        List expectedOuter = new ArrayList();
+        Map expectedInner = new HashMap();
+
+        expectedInner.put(s("a"), s("b"));
+        expectedOuter.add(expectedInner);
+
+        assertLoad(expectedOuter, "[{a: b}]");
+    }
+
+    public void testNestedFlowMappingLoad() throws Exception {
+        Map expectedInner = new HashMap();
+        expectedInner.put(s("b"), s("c"));
+      
+        Map expectedOuter = new HashMap();
+        expectedOuter.put(s("a"), expectedInner);
+
+        assertLoad(expectedOuter, "{a: {b: c}}");
+    }
+
+    public void testNestedFlowSequenceFlowMappingLoad() throws Exception {
+        List expectedOuterList = new ArrayList();
+
+        Map expectedInnerMap = new HashMap();
+        expectedInnerMap.put(s("b"), s("c"));
+        Map expectedOuterMap = new HashMap();
+        expectedOuterMap.put(s("a"), expectedInnerMap);
+
+        expectedOuterList.add(expectedOuterMap);
+
+        assertLoad(expectedOuterList, "[{a: {b: c}}]");
     }
 }// YAMLLoadTest

@@ -491,8 +491,12 @@ public class ScannerImpl implements Scanner {
     }
 
     private boolean lastTokenIsFlowControl() {
+        if(this.tokens.size() == 0) {
+            return false;
+        }
         final Token last = (Token)this.tokens.get(this.tokens.size()-1);
-        return (last instanceof FlowMappingStartToken) ||
+        return last == null ||
+            (last instanceof FlowMappingStartToken) ||
             (last instanceof FlowSequenceStartToken) ||
             (last instanceof ValueToken) ||
             (last instanceof KeyToken) ||

@@ -21,9 +21,14 @@ import org.jruby.util.ByteList;
 import org.jvyamlb.tokens.AliasToken;
 import org.jvyamlb.tokens.AnchorToken;
 import org.jvyamlb.tokens.DirectiveToken;
+import org.jvyamlb.tokens.FlowMappingStartToken;
+import org.jvyamlb.tokens.FlowSequenceStartToken;
+import org.jvyamlb.tokens.FlowEntryToken;
+import org.jvyamlb.tokens.KeyToken;
 import org.jvyamlb.tokens.ScalarToken;
 import org.jvyamlb.tokens.TagToken;
 import org.jvyamlb.tokens.Token;
+import org.jvyamlb.tokens.ValueToken;
 
 /**
  * <p>A Java implementation of the RbYAML scanner.</p>
@@ -485,6 +490,15 @@ public class ScannerImpl implements Scanner {
                  (NULL_BL_T_LINEBR[this.buffer.bytes[this.pointer+3]]);
     }
 
+    private boolean lastTokenIsFlowControl() {
+        final Token last = (Token)this.tokens.get(this.tokens.size()-1);
+        return (last instanceof FlowMappingStartToken) ||
+            (last instanceof FlowSequenceStartToken) ||
+            (last instanceof ValueToken) ||
+            (last instanceof KeyToken) ||
+            (last instanceof FlowEntryToken);
+    }
+
     private Token fetchMoreTokens() {
         scanToNextToken();
         unwindIndent(this.column);
@@ -495,7 +509,7 @@ public class ScannerImpl implements Scanner {
         case '\'': return fetchSingle();
         case '"': return fetchDouble();
         case '?': if(this.flowLevel != 0 || NULL_BL_T_LINEBR[peek(1)]) { return fetchKey(); } break;
-        case ':': if(this.flowLevel != 0 || NULL_BL_T_LINEBR[peek(1)]) { return fetchValue(); } break;
+        case ':': if((this.flowLevel != 0 || NULL_BL_T_LINEBR[peek(1)]) && !lastTokenIsFlowControl()) { return fetchValue(); } break;
         case '%': if(colz) {return fetchDirective(); } break;
         case '-': 
             if((colz || docStart) && isEnding()) {

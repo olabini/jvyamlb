@@ -121,6 +121,18 @@ public class SimpleLoadTest extends YAMLTestCase {
         assertLoad(expected, "---\nfoo: \tbar");
     }
 
+    public void testSymbols() throws Exception {
+        assertLoad(s(":a"), "--- \n:a"); 
+        List expected = new ArrayList();
+        expected.add(s(":a"));
+        assertLoad(expected, "--- \n[:a]"); 
+
+        Map expected2 = new HashMap();
+        expected2.put(s(":year"), s(":last"));
+        expected2.put(s(":month"), s(":jan"));
+        assertLoad(expected2, "--- \n{:year: :last, :month: :jan}");
+    }
+
     public void testLoadOfAsterisk() throws Exception {
         assertLoad(s("*.rb"), "--- \n*.rb"); 
         assertLoad(s("*.rb"), "--- \n'*.rb'");

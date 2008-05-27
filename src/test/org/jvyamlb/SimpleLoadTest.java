@@ -131,6 +131,13 @@ public class SimpleLoadTest extends YAMLTestCase {
         expected2.put(s(":year"), s(":last"));
         expected2.put(s(":month"), s(":jan"));
         assertLoad(expected2, "--- \n{:year: :last, :month: :jan}");
+        
+        expected2 = new HashMap();
+        List l = new ArrayList();
+        l.add(s(":year"));
+        expected2.put(s("order"), l);
+
+        assertLoad(expected2, "--- \norder: [:year]");
     }
 
     public void testLoadOfAsterisk() throws Exception {

@@ -20,8 +20,8 @@ public abstract class Token {
     public final static Token FLOW_SEQUENCE_START = new FlowSequenceStartToken();
     public final static Token KEY = new KeyToken();
     public final static Token VALUE = new ValueToken();
-    public final static Token STREAM_END = new StreamEndToken();
-    public final static Token STREAM_START = new StreamStartToken();
+    public final static StreamEndToken STREAM_END = new StreamEndToken();
+    public final static StreamStartToken STREAM_START = new StreamStartToken();
 
     public Token() {
     }

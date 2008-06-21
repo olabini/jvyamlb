@@ -25,4 +25,8 @@ public class PositionedStreamEndToken extends StreamEndToken implements Position
             ((other instanceof PositionedStreamEndToken) &&
              this.getPosition().equals(((PositionedStreamEndToken)other).getPosition()));
     }
+
+    public String toString() {
+        return "#<" + this.getClass().getName() + " position=" + getPosition() + ">";
+    }
 }// PositionedStreamEndToken

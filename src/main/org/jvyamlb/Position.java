@@ -35,4 +35,8 @@ public class Position {
         }
         return res;
     }
+
+    public String toString() {
+        return "#<Position " + line + ":" + column + " (offset=" + offset + ", length=" + length + ")>";
+    }
 }// Position

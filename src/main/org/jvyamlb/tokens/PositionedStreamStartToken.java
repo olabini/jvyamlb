@@ -25,4 +25,8 @@ public class PositionedStreamStartToken extends StreamStartToken implements Posi
             ((other instanceof PositionedStreamStartToken) &&
              this.getPosition().equals(((PositionedStreamStartToken)other).getPosition()));
     }
+
+    public String toString() {
+        return "#<" + this.getClass().getName() + " position=" + getPosition() + ">";
+    }
 }// PositionedStreamStartToken

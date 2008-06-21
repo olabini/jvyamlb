@@ -14,5 +14,9 @@ public class PositionTest extends TestCase {
         super(name);
     }
 
+    public void testTrue() {
+        
+    }
+
     // TODO: implement
 }// PositionTest

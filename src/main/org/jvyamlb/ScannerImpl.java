@@ -29,6 +29,8 @@ import org.jvyamlb.tokens.ScalarToken;
 import org.jvyamlb.tokens.TagToken;
 import org.jvyamlb.tokens.Token;
 import org.jvyamlb.tokens.ValueToken;
+import org.jvyamlb.tokens.StreamStartToken;
+import org.jvyamlb.tokens.StreamEndToken;
 
 /**
  * <p>A Java implementation of the RbYAML scanner.</p>
@@ -560,20 +562,30 @@ public class ScannerImpl implements Scanner {
         throw new ScannerException("while scanning for the next token","found character " + ch + "(" + (int)ch + ") that cannot start any token",null);
     }
 
+    protected StreamStartToken getStreamStart() {
+        return Token.STREAM_START;
+    }
+
+    protected StreamEndToken getStreamEnd() {
+        return Token.STREAM_END;
+    }
+
     private Token fetchStreamStart() {
         this.docStart = true;
-        addToken(Token.STREAM_START);
-        return Token.STREAM_START;
+        Token t = getStreamStart();
+        addToken(t);
+        return t;
     }
 
     private Token fetchStreamEnd() {
         unwindIndent(-1);
         this.allowSimpleKey = false;
         this.possibleSimpleKeys = new TreeMap();
-        addToken(Token.STREAM_END);
+        Token t = getStreamEnd();
+        addToken(t);
         this.done = true;
         this.docStart = false;
-        return Token.STREAM_END;
+        return t;
     }
 
     private void scanToNextToken() {

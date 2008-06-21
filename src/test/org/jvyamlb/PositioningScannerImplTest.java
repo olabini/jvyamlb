@@ -35,4 +35,13 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         List tokens = getScan("");
         assertEquals(expected, tokens);
     }
+
+    public void testThatEmptyScannerGeneratesPositionedEnvelope() {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position(0,0,0,0)));
+        expected.add(new PositionedStreamEndToken(new Position(0,0,0,0)));
+
+        List tokens = getScan("---");
+        assertEquals(expected, tokens);
+    }
 }// PositioningScannerImplTest

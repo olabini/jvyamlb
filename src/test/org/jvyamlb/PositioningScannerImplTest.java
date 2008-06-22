@@ -23,6 +23,8 @@ import org.jvyamlb.tokens.PositionedFlowMappingEndToken;
 import org.jvyamlb.tokens.PositionedFlowSequenceStartToken;
 import org.jvyamlb.tokens.PositionedFlowSequenceEndToken;
 import org.jvyamlb.tokens.PositionedFlowEntryToken;
+import org.jvyamlb.tokens.PositionedTagToken;
+import org.jruby.util.ByteList;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -229,6 +231,17 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(0,7,7))));
 
         List tokens = getScan("[a, b ]");
+        assertEquals(expected, tokens);
+    }
+
+    public void testScalarWithTag() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedTagToken(new ByteList[]{s("!"), s("str")}, new Position.Range(new Position(0,0,0),new Position(0,4,4))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0, new Position.Range(new Position(0,5,5), new Position(0, 6, 6))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,6,6))));
+
+        List tokens = getScan("!str a");
         assertEquals(expected, tokens);
     }
 }// PositioningScannerImplTest

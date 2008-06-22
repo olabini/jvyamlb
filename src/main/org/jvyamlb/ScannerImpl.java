@@ -801,6 +801,7 @@ public class ScannerImpl implements Scanner {
     }
     
     private Token scanTag() {
+        startingItem();
         char ch = peek(1);
         ByteList handle = null;
         ByteList suffix = null;

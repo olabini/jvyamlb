@@ -45,6 +45,7 @@ import org.jvyamlb.tokens.PositionedFlowMappingEndToken;
 import org.jvyamlb.tokens.PositionedFlowSequenceStartToken;
 import org.jvyamlb.tokens.PositionedFlowSequenceEndToken;
 import org.jvyamlb.tokens.PositionedFlowEntryToken;
+import org.jvyamlb.tokens.PositionedTagToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -178,7 +179,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected TagToken getTag(final ByteList[] args) {
-        return new TagToken(args);
+        return new PositionedTagToken(args, new Position.Range(getStartPosition(), getPosition()));
     }
 
     protected AliasToken getAlias() {

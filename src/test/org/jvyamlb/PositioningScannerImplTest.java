@@ -18,6 +18,8 @@ import org.jvyamlb.tokens.PositionedKeyToken;
 import org.jvyamlb.tokens.PositionedValueToken;
 import org.jvyamlb.tokens.PositionedBlockSequenceStartToken;
 import org.jvyamlb.tokens.PositionedBlockEntryToken;
+import org.jvyamlb.tokens.PositionedFlowMappingStartToken;
+import org.jvyamlb.tokens.PositionedFlowMappingEndToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -122,6 +124,8 @@ public class PositioningScannerImplTest extends YAMLTestCase {
                               "c:  d");
         assertEquals(expected, tokens);
     }
+    
+    // TODO: add testing of nested block mappings
 
     public void testThatAOneItemSequenceWorks() throws Exception {
         List expected = new ArrayList();
@@ -181,6 +185,21 @@ public class PositioningScannerImplTest extends YAMLTestCase {
                               "- - foo\n"+
                               "  - bar\n"+
                               "- b");
+        assertEquals(expected, tokens);
+    }
+
+    public void testThatSimpleFlowMappingWorks() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedFlowMappingStartToken(              new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedKeyToken(                           new Position.Range(new Position(0,1,1))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0,  new Position.Range(new Position(0,1,1), new Position(0,2,2))));
+        expected.add(new PositionedValueToken(                         new Position.Range(new Position(0,3,3))));
+        expected.add(new PositionedScalarToken(s("b"), true, (char)0,  new Position.Range(new Position(0,4,4), new Position(0,5,5))));
+        expected.add(new PositionedFlowMappingEndToken(                new Position.Range(new Position(0,5,5))));
+        expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(0,6,6))));
+
+        List tokens = getScan("{a: b}");
         assertEquals(expected, tokens);
     }
 }// PositioningScannerImplTest

@@ -40,6 +40,8 @@ import org.jvyamlb.tokens.PositionedKeyToken;
 import org.jvyamlb.tokens.PositionedValueToken;
 import org.jvyamlb.tokens.PositionedBlockSequenceStartToken;
 import org.jvyamlb.tokens.PositionedBlockEntryToken;
+import org.jvyamlb.tokens.PositionedFlowMappingStartToken;
+import org.jvyamlb.tokens.PositionedFlowMappingEndToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -157,7 +159,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected FlowMappingStartToken getFlowMappingStart() {
-        return Token.FLOW_MAPPING_START;
+        return new PositionedFlowMappingStartToken(new Position.Range(getPosition()));
     }
 
     protected FlowSequenceEndToken getFlowSequenceEnd() {
@@ -165,7 +167,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected FlowMappingEndToken getFlowMappingEnd() {
-        return Token.FLOW_MAPPING_END;
+        return new PositionedFlowMappingEndToken(new Position.Range(getPosition()));
     }
 
     protected FlowEntryToken getFlowEntry() {

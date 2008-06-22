@@ -9,14 +9,14 @@ import org.jvyamlb.Positionable;
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class PositionedStreamStartToken extends StreamStartToken implements Positionable {
+public class PositionedDocumentStartToken extends DocumentStartToken implements Positionable {
     private Position.Range range;
 
-    public PositionedStreamStartToken(Position.Range r) {
+    public PositionedDocumentStartToken(Position.Range r) {
         assert r != null;
         this.range = r;
     }
-    
+
     public Position getPosition() {
         return range.start;
     }
@@ -27,11 +27,11 @@ public class PositionedStreamStartToken extends StreamStartToken implements Posi
 
     public boolean equals(Object other) {
         return this == other || 
-            ((other instanceof PositionedStreamStartToken) &&
-             this.getRange().equals(((PositionedStreamStartToken)other).getRange()));
+            ((other instanceof PositionedDocumentStartToken) &&
+             this.getRange().equals(((PositionedDocumentStartToken)other).getRange()));
     }
 
     public String toString() {
-        return "#<" + this.getClass().getName() + " position=" + getPosition() + ">";
+        return "#<" + this.getClass().getName() + " range=" + getRange() + ">";
     }
-}// PositionedStreamStartToken
+}// PositionedDocumentStartToken

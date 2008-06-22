@@ -8,4 +8,5 @@ package org.jvyamlb;
  */
 public interface Positionable {
     Position getPosition();
+    Position.Range getRange();
 }// Positionable

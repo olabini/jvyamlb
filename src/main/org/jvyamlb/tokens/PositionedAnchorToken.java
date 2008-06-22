@@ -6,15 +6,20 @@ package org.jvyamlb.tokens;
 import org.jruby.util.ByteList;
 
 import org.jvyamlb.Position;
-import java.util.Arrays;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class PositionedTagToken extends TagToken {
+public class PositionedAnchorToken extends AnchorToken {
     private Position.Range range;
 
-    public PositionedTagToken(final ByteList[] value, final Position.Range range) {
+    public PositionedAnchorToken(final Position.Range range) {
+        super();
+        assert range != null;
+        this.range = range;
+    }
+
+    public PositionedAnchorToken(final String value, final Position.Range range) {
         super(value);
         assert range != null;
         this.range = range;
@@ -30,23 +35,16 @@ public class PositionedTagToken extends TagToken {
 
     public boolean equals(Object other) {
         boolean ret = this == other;
-        if(!ret && (other instanceof PositionedTagToken)) {
-            PositionedTagToken o = (PositionedTagToken)other;
+        if(!ret && (other instanceof PositionedAnchorToken)) {
+            PositionedAnchorToken o = (PositionedAnchorToken)other;
             ret = 
-                Arrays.equals(this.getValue(), o.getValue()) &&
+                this.getValue().equals(o.getValue()) &&
                 this.getRange().equals(o.getRange());
         }
         return ret;
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        String sep = "";
-        for(int i=0;i<getValue().length;i++) {
-            sb.append(sep).append("\"").append(getValue()[i]).append("\"");
-            sep = ", ";
-        }
-
-        return "#<" + this.getClass().getName() + " value=[" + sb + "] range=" + getRange() + ">";
+        return "#<" + this.getClass().getName() + " value=\""+getValue()+"\" range=" + getRange() + ">";
     }
-}// PositionedScalarToken
+}// PositionedAnchorToken

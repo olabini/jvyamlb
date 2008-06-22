@@ -24,6 +24,8 @@ import org.jvyamlb.tokens.PositionedFlowSequenceStartToken;
 import org.jvyamlb.tokens.PositionedFlowSequenceEndToken;
 import org.jvyamlb.tokens.PositionedFlowEntryToken;
 import org.jvyamlb.tokens.PositionedTagToken;
+import org.jvyamlb.tokens.PositionedAliasToken;
+import org.jvyamlb.tokens.PositionedAnchorToken;
 import org.jruby.util.ByteList;
 
 /**
@@ -242,6 +244,67 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,6,6))));
 
         List tokens = getScan("!str a");
+        assertEquals(expected, tokens);
+    }
+
+    public void testScalarWithAlias() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedAliasToken("foobar", new Position.Range(new Position(0,0,0), new Position(0,7,7))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0, new Position.Range(new Position(0,8,8), new Position(0,9,9))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,9,9))));
+
+        List tokens = getScan("*foobar a");
+        assertEquals(expected, tokens);
+    }
+
+    public void testAnchor() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedAnchorToken("foobar", new Position.Range(new Position(0,0,0), new Position(0,7,7))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,7,7))));
+
+        List tokens = getScan("&foobar");
+        assertEquals(expected, tokens);
+    }
+
+    public void testDirective() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,0,0))));
+
+        List tokens = getScan("%YAML 1.0");
+        assertEquals(expected, tokens);
+    }
+
+    public void testLiteralScalar() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,0,0))));
+
+        List tokens = getScan("|\n"+
+                              " abc\n"+
+                              " foobar");
+        assertEquals(expected, tokens);
+    }
+
+    public void testFoldedScalar() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,0,0))));
+
+        List tokens = getScan(">\n"+
+                              " abc\n"+
+                              " foobar");
+        assertEquals(expected, tokens);
+    }
+
+    public void testSingleQuotedScalar() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,0,0))));
+
+        List tokens = getScan("'abc'");
         assertEquals(expected, tokens);
     }
 }// PositioningScannerImplTest

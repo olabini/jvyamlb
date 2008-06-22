@@ -46,6 +46,8 @@ import org.jvyamlb.tokens.PositionedFlowSequenceStartToken;
 import org.jvyamlb.tokens.PositionedFlowSequenceEndToken;
 import org.jvyamlb.tokens.PositionedFlowEntryToken;
 import org.jvyamlb.tokens.PositionedTagToken;
+import org.jvyamlb.tokens.PositionedAliasToken;
+import org.jvyamlb.tokens.PositionedAnchorToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -183,11 +185,21 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected AliasToken getAlias() {
-        return new AliasToken();
+        return new PositionedAliasToken(new Position.Range(getPosition()));
     }
 
     protected AnchorToken getAnchor() {
-        return new AnchorToken();
+        return new PositionedAnchorToken(new Position.Range(getPosition()));
+    }
+
+    protected Token finalizeAnchor(Token t) {
+        if(t instanceof PositionedAliasToken) {
+            return new PositionedAliasToken((String)((AliasToken)t).getValue(), new Position.Range(((PositionedAliasToken)t).getPosition(), getPosition()));
+        } else if(t instanceof PositionedAnchorToken) {
+            return new PositionedAnchorToken((String)((AnchorToken)t).getValue(), new Position.Range(((PositionedAnchorToken)t).getPosition(), getPosition()));
+        }
+
+        return t;
     }
 
     protected DirectiveToken getDirective(String name, String[] value) {

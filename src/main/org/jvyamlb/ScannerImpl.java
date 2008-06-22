@@ -650,6 +650,10 @@ public class ScannerImpl implements Scanner {
         return new AnchorToken();
     }
 
+    protected Token finalizeAnchor(Token t) {
+        return t;
+    }
+
     protected DirectiveToken getDirective(String name, String[] value) {
         return new DirectiveToken(name, value);
     }
@@ -1562,7 +1566,7 @@ public class ScannerImpl implements Scanner {
 
         }
         tok.setValue(value);
-        return tok;
+        return finalizeAnchor(tok);
     }
 
     private String[] scanYamlDirectiveValue() {

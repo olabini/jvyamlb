@@ -82,7 +82,9 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         expected.add(new PositionedScalarToken(s("abcdefafgsdfgsdfg sfgdfsg fdsgfgsdf"), false, '"', new Position.Range(new Position(0,4,4), new Position(2,10,41))));
         expected.add(new PositionedStreamEndToken(new Position.Range(new Position(2,10,41))));
 
-        List tokens = getScan("--- \"abcdefafgsdfgsdfg\nsfgdfsg\nfdsgfgsdf\"");
+        List tokens = getScan("--- \"abcdefafgsdfgsdfg\n"+
+                              "sfgdfsg\n"+
+                              "fdsgfgsdf\"");
         assertEquals(expected, tokens);
     }
 
@@ -116,11 +118,12 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         expected.add(new PositionedBlockEndToken(                      new Position.Range(new Position(1,5,10))));
         expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(1,5,10))));
 
-        List tokens = getScan("a: b\nc:  d");
+        List tokens = getScan("a: b\n"+
+                              "c:  d");
         assertEquals(expected, tokens);
     }
 
-    public void testThatAOneItemListWorks() throws Exception {
+    public void testThatAOneItemSequenceWorks() throws Exception {
         List expected = new ArrayList();
         expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
         expected.add(new PositionedBlockSequenceStartToken(            new Position.Range(new Position(0,0,0))));
@@ -130,6 +133,54 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(0,3,3))));
 
         List tokens = getScan("- a");
+        assertEquals(expected, tokens);
+    }
+
+    public void testThatMoreThanOneItemSequenceWorks() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockSequenceStartToken(            new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0,  new Position.Range(new Position(0,2,2), new Position(0,3,3))));
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(1,0,4))));
+        expected.add(new PositionedScalarToken(s("b"), true, (char)0,  new Position.Range(new Position(1,4,8), new Position(1,5,9))));
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(2,0,10))));
+        expected.add(new PositionedScalarToken(s("c"), true, (char)0,  new Position.Range(new Position(2,2,12), new Position(2,3,13))));
+        expected.add(new PositionedBlockEndToken(                      new Position.Range(new Position(2,3,13))));
+        expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(2,3,13))));
+
+        List tokens = getScan("- a\n"+
+                              "-   b\n"+
+                              "- c");
+        assertEquals(expected, tokens);
+    }
+
+    public void testThatListedSequenesWorks() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockSequenceStartToken(            new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0,  new Position.Range(new Position(0,2,2), new Position(0,3,3))));
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(1,0,4))));
+
+        expected.add(new PositionedBlockSequenceStartToken(            new Position.Range(new Position(1,2,6))));
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(1,2,6))));
+        expected.add(new PositionedScalarToken(s("foo"), true, (char)0,new Position.Range(new Position(1,4,8), new Position(1,7,11))));
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(2,2,14))));
+        expected.add(new PositionedScalarToken(s("bar"), true, (char)0,new Position.Range(new Position(2,4,16), new Position(2,7,19))));
+
+        // This is a bit unintuitive - a block ending is on the new line afterwards.
+        expected.add(new PositionedBlockEndToken(                      new Position.Range(new Position(3,0,20))));
+
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(3,0,20))));
+        expected.add(new PositionedScalarToken(s("b"), true, (char)0,  new Position.Range(new Position(3,2,22), new Position(3,3,23))));
+        expected.add(new PositionedBlockEndToken(                      new Position.Range(new Position(3,3,23))));
+        expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(3,3,23))));
+
+        List tokens = getScan("- a\n"+
+                              "- - foo\n"+
+                              "  - bar\n"+
+                              "- b");
         assertEquals(expected, tokens);
     }
 }// PositioningScannerImplTest

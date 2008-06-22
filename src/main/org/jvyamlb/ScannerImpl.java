@@ -602,11 +602,19 @@ public class ScannerImpl implements Scanner {
         return Token.KEY;
     }
 
+    protected KeyToken getKey(SimpleKey key) {
+        return Token.KEY;
+    }
+
     protected ValueToken getValue() {
         return Token.VALUE;
     }
 
     protected BlockMappingStartToken getBlockMappingStart() {
+        return Token.BLOCK_MAPPING_START;
+    }
+
+    protected BlockMappingStartToken getBlockMappingStart(SimpleKey key) {
         return Token.BLOCK_MAPPING_START;
     }
 
@@ -781,10 +789,14 @@ public class ScannerImpl implements Scanner {
         }
     }
 
+    protected SimpleKey getSimpleKey(final int tokenNumber, final boolean required, final int index, final int line, final int column) {
+        return new SimpleKey(tokenNumber, required, index, line, column);
+    }
+
     private void savePossibleSimpleKey() {
         if(this.allowSimpleKey) {
             this.removePossibleSimpleKey();
-            this.possibleSimpleKeys.put(new Integer(this.flowLevel),new SimpleKey(this.tokensTaken+this.tokens.size(),(this.flowLevel == 0) && this.indent == this.column,-1,-1,this.column));
+            this.possibleSimpleKeys.put(new Integer(this.flowLevel), getSimpleKey(this.tokensTaken+this.tokens.size(), (this.flowLevel == 0) && this.indent == this.column,-1,-1,this.column));
         }
     }
     
@@ -904,6 +916,9 @@ public class ScannerImpl implements Scanner {
 
     protected void startingItem() {
     }
+
+    protected void possibleEnd() {
+    }
    
     private Token scanPlain() {
         startingItem();
@@ -942,6 +957,7 @@ public class ScannerImpl implements Scanner {
             ensure(length,false);
             chunks.append(this.buffer.bytes,this.pointer,length);
             forward(length);
+            possibleEnd();
             spaces = scanPlainSpaces(ind);
             if(spaces == null || (this.flowLevel == 0 && this.column < ind)) {
                 break;
@@ -1184,9 +1200,9 @@ public class ScannerImpl implements Scanner {
         } else {
             this.possibleSimpleKeys.remove(new Integer(this.flowLevel));
             // TODO: Make sure that this parts gets fixed from a position perspective
-            this.tokens.add(key.getTokenNumber()-this.tokensTaken,getKey());
+            this.tokens.add(key.getTokenNumber()-this.tokensTaken,getKey(key));
             if(this.flowLevel == 0 && addIndent(key.getColumn())) {
-                this.tokens.add(key.getTokenNumber()-this.tokensTaken,getBlockMappingStart());
+                this.tokens.add(key.getTokenNumber()-this.tokensTaken,getBlockMappingStart(key));
             }
             this.allowSimpleKey = false;
         }

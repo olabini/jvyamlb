@@ -34,6 +34,10 @@ import org.jvyamlb.tokens.StreamStartToken;
 import org.jvyamlb.tokens.TagToken;
 import org.jvyamlb.tokens.Token;
 import org.jvyamlb.tokens.ValueToken;
+import org.jvyamlb.tokens.PositionedBlockMappingStartToken;
+import org.jvyamlb.tokens.PositionedBlockEndToken;
+import org.jvyamlb.tokens.PositionedKeyToken;
+import org.jvyamlb.tokens.PositionedValueToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -54,6 +58,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     private int line = 0;
     private int offset = 0;
     private List started = new ArrayList();
+    private Position possible = null;
 
     protected void forward() {
         final int lastPointer = pointer;
@@ -91,6 +96,10 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
         started.add(0, getPosition());
     }
 
+    protected void possibleEnd() {
+        this.possible = getPosition();
+    }
+
     protected StreamStartToken getStreamStart() {
         return new PositionedStreamStartToken(new Position.Range(getPosition()));
     }
@@ -110,7 +119,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
     
     protected BlockEndToken getBlockEnd() {
-        return Token.BLOCK_END;
+        return new PositionedBlockEndToken(new Position.Range(getPosition()));
     }
 
     protected BlockSequenceStartToken getBlockSequenceStart() {
@@ -122,15 +131,23 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected KeyToken getKey() {
-        return Token.KEY;
+        return new PositionedKeyToken(new Position.Range(getPosition()));
+    }
+
+    protected KeyToken getKey(SimpleKey key) {
+        return new PositionedKeyToken(new Position.Range(key.getPosition()));
     }
 
     protected ValueToken getValue() {
-        return Token.VALUE;
+        return new PositionedValueToken(new Position.Range(getPosition()));
     }
 
     protected BlockMappingStartToken getBlockMappingStart() {
-        return Token.BLOCK_MAPPING_START;
+        return new PositionedBlockMappingStartToken(new Position.Range(getPosition()));
+    }
+
+    protected BlockMappingStartToken getBlockMappingStart(SimpleKey key) {
+        return new PositionedBlockMappingStartToken(new Position.Range(key.getPosition()));
     }
 
     protected FlowSequenceStartToken getFlowSequenceStart() {
@@ -170,6 +187,18 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected ScalarToken getScalar(ByteList value, boolean plain, char style) {
-        return new PositionedScalarToken(value, plain, style, getRange());
+        Position p = possible;
+        if(p == null) {
+            p = getPosition();
+        } else {
+            possible = null;
+        }
+
+        return new PositionedScalarToken(value, plain, style, new Position.Range(getStartPosition(), p));
+    }
+
+    protected SimpleKey getSimpleKey(final int tokenNumber, final boolean required, final int index, final int line, final int column) {
+        final Position p = getPosition();
+        return new SimpleKey(tokenNumber, required, p.offset, p.line, column);
     }
 }// PositioningScannerImpl

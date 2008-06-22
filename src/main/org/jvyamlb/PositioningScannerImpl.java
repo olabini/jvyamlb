@@ -42,6 +42,9 @@ import org.jvyamlb.tokens.PositionedBlockSequenceStartToken;
 import org.jvyamlb.tokens.PositionedBlockEntryToken;
 import org.jvyamlb.tokens.PositionedFlowMappingStartToken;
 import org.jvyamlb.tokens.PositionedFlowMappingEndToken;
+import org.jvyamlb.tokens.PositionedFlowSequenceStartToken;
+import org.jvyamlb.tokens.PositionedFlowSequenceEndToken;
+import org.jvyamlb.tokens.PositionedFlowEntryToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -155,7 +158,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected FlowSequenceStartToken getFlowSequenceStart() {
-        return Token.FLOW_SEQUENCE_START;
+        return new PositionedFlowSequenceStartToken(new Position.Range(getPosition()));
     }
 
     protected FlowMappingStartToken getFlowMappingStart() {
@@ -163,7 +166,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected FlowSequenceEndToken getFlowSequenceEnd() {
-        return Token.FLOW_SEQUENCE_END;
+        return new PositionedFlowSequenceEndToken(new Position.Range(getPosition()));
     }
 
     protected FlowMappingEndToken getFlowMappingEnd() {
@@ -171,7 +174,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected FlowEntryToken getFlowEntry() {
-        return Token.FLOW_ENTRY;
+        return new PositionedFlowEntryToken(new Position.Range(getPosition()));
     }
 
     protected TagToken getTag(final ByteList[] args) {

@@ -22,6 +22,7 @@ import org.jvyamlb.tokens.PositionedFlowMappingStartToken;
 import org.jvyamlb.tokens.PositionedFlowMappingEndToken;
 import org.jvyamlb.tokens.PositionedFlowSequenceStartToken;
 import org.jvyamlb.tokens.PositionedFlowSequenceEndToken;
+import org.jvyamlb.tokens.PositionedFlowEntryToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -214,6 +215,20 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(0,3,3))));
 
         List tokens = getScan("[a]");
+        assertEquals(expected, tokens);
+    }
+
+    public void testThatFlowSequenceWithMoreThanOneElementWorks() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedFlowSequenceStartToken(             new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0,  new Position.Range(new Position(0,1,1), new Position(0,2,2))));
+        expected.add(new PositionedFlowEntryToken(                     new Position.Range(new Position(0,3,3))));
+        expected.add(new PositionedScalarToken(s("b"), true, (char)0,  new Position.Range(new Position(0,4,4), new Position(0,5,5))));
+        expected.add(new PositionedFlowSequenceEndToken(               new Position.Range(new Position(0,6,6))));
+        expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(0,7,7))));
+
+        List tokens = getScan("[a, b ]");
         assertEquals(expected, tokens);
     }
 }// PositioningScannerImplTest

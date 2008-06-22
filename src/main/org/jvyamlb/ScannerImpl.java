@@ -756,8 +756,8 @@ public class ScannerImpl implements Scanner {
         }
         this.allowSimpleKey = true;
         removePossibleSimpleKey();
-        forward();
         Token t = getBlockEntry();
+        forward();
         addToken(t);
         return t;
     }        

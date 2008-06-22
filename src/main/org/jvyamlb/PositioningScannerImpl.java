@@ -38,6 +38,8 @@ import org.jvyamlb.tokens.PositionedBlockMappingStartToken;
 import org.jvyamlb.tokens.PositionedBlockEndToken;
 import org.jvyamlb.tokens.PositionedKeyToken;
 import org.jvyamlb.tokens.PositionedValueToken;
+import org.jvyamlb.tokens.PositionedBlockSequenceStartToken;
+import org.jvyamlb.tokens.PositionedBlockEntryToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -123,11 +125,11 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected BlockSequenceStartToken getBlockSequenceStart() {
-        return Token.BLOCK_SEQUENCE_START;
+        return new PositionedBlockSequenceStartToken(new Position.Range(getPosition()));
     }
 
     protected BlockEntryToken getBlockEntry() {
-        return Token.BLOCK_ENTRY;
+        return new PositionedBlockEntryToken(new Position.Range(getPosition()));
     }
 
     protected KeyToken getKey() {

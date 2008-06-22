@@ -16,6 +16,8 @@ import org.jvyamlb.tokens.PositionedBlockMappingStartToken;
 import org.jvyamlb.tokens.PositionedBlockEndToken;
 import org.jvyamlb.tokens.PositionedKeyToken;
 import org.jvyamlb.tokens.PositionedValueToken;
+import org.jvyamlb.tokens.PositionedBlockSequenceStartToken;
+import org.jvyamlb.tokens.PositionedBlockEntryToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -115,6 +117,19 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(1,5,10))));
 
         List tokens = getScan("a: b\nc:  d");
+        assertEquals(expected, tokens);
+    }
+
+    public void testThatAOneItemListWorks() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockSequenceStartToken(            new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockEntryToken(                    new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0,  new Position.Range(new Position(0,2,2), new Position(0,3,3))));
+        expected.add(new PositionedBlockEndToken(                      new Position.Range(new Position(0,3,3))));
+        expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(0,3,3))));
+
+        List tokens = getScan("- a");
         assertEquals(expected, tokens);
     }
 }// PositioningScannerImplTest

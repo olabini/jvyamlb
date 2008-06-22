@@ -302,7 +302,8 @@ public class PositioningScannerImplTest extends YAMLTestCase {
     public void testSingleQuotedScalar() throws Exception {
         List expected = new ArrayList();
         expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
-        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("abc"), false, '\'', new Position.Range(new Position(0,0,0), new Position(0,5,5))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,5,5))));
 
         List tokens = getScan("'abc'");
         assertEquals(expected, tokens);

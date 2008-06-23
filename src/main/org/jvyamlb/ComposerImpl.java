@@ -89,6 +89,20 @@ public class ComposerImpl implements Composer {
         return new ScalarNode(tag,value,style);
     }
 
+    protected Node createMapping(final String tag, final Map value, final boolean flowStyle, final Event e) {
+        return new MappingNode(tag,value,flowStyle);
+    }
+
+    protected void finalizeMapping(final Node node, final Event e) {
+    }
+
+    protected Node createSequence(final String tag, final List value, final boolean flowStyle, final Event e) {
+        return new SequenceNode(tag,value,flowStyle);
+    }
+
+    protected void finalizeSequence(final Node node, final Event e) {
+    }
+
     public Node composeNode(final Node parent, final Object index) {
         if(parser.peekEvent() instanceof AliasEvent) {
             final AliasEvent event = (AliasEvent)parser.getEvent();
@@ -121,7 +135,7 @@ public class ComposerImpl implements Composer {
             if(tag == null || tag.equals("!")) {
                 tag = resolver.resolve(SequenceNode.class,null,start.getImplicit()  ? TRU : FALS);
             }
-            node = new SequenceNode(tag,new ArrayList(),start.getFlowStyle());
+            node = createSequence(tag,new ArrayList(),start.getFlowStyle(),start);
             if(null != anchor) {
                 anchors.put(anchor,node);
             }
@@ -129,14 +143,14 @@ public class ComposerImpl implements Composer {
             while(!(parser.peekEvent() instanceof SequenceEndEvent)) {
                 ((List)node.getValue()).add(composeNode(node,new Integer(ix++)));
             }
-            parser.getEvent();
+            finalizeSequence(node, parser.getEvent());
         } else if(event instanceof MappingStartEvent) {
             final MappingStartEvent start = (MappingStartEvent)parser.getEvent();
             String tag = start.getTag();
             if(tag == null || tag.equals("!")) {
                 tag = resolver.resolve(MappingNode.class,null, start.getImplicit() ? TRU : FALS);
             }
-            node = new MappingNode(tag, new HashMap(), start.getFlowStyle());
+            node = createMapping(tag, new HashMap(), start.getFlowStyle(), start);
             if(null != anchor) {
                 anchors.put(anchor,node);
             }
@@ -149,7 +163,7 @@ public class ComposerImpl implements Composer {
                     ((Map)node.getValue()).put(itemKey,composeNode(node,itemKey));
                 }
             }
-            parser.getEvent();
+            finalizeMapping(node, parser.getEvent());
         }
         resolver.ascendResolver();
         return node;

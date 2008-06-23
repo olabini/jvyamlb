@@ -11,6 +11,10 @@ import org.jruby.util.ByteList;
 
 import org.jvyamlb.nodes.Node;
 import org.jvyamlb.nodes.PositionedScalarNode;
+import org.jvyamlb.nodes.PositionedMappingNode;
+import org.jvyamlb.nodes.PositionedSequenceNode;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -34,6 +38,27 @@ public class PositioningComposerImplTest extends YAMLTestCase {
     public void testThatSimpleScalarGeneratesCorrectPositioning() throws Exception {
         Node expected = new PositionedScalarNode("tag:yaml.org,2002:str", s("a"), (char)0, new Position.Range(new Position(0,0,0), new Position(0,1,1)));
         Node node = getDocument("a");
+        assertEquals(expected, node);
+    }
+
+    public void testThatAKeyValuePairGetsCorrectPositioning() throws Exception {
+        Map value = new HashMap();
+        value.put(
+                  new PositionedScalarNode("tag:yaml.org,2002:str", s("a"), (char)0, new Position.Range(new Position(0,0,0), new Position(0,1,1))),
+                  new PositionedScalarNode("tag:yaml.org,2002:str", s("b"), (char)0, new Position.Range(new Position(0,3,3), new Position(0,4,4)))
+                  );
+        Node expected = new PositionedMappingNode("tag:yaml.org,2002:map", value, false, new Position.Range(new Position(0,0,0), new Position(0,4,4)));
+        Node node = getDocument("a: b");
+        assertEquals(expected, node);
+    }
+
+    public void testThatASimpleSequenceGetsCorrectPositioning() throws Exception {
+        List value = new ArrayList();
+        value.add(
+                  new PositionedScalarNode("tag:yaml.org,2002:str", s("a"), (char)0, new Position.Range(new Position(0,2,2), new Position(0,3,3)))
+                  );
+        Node expected = new PositionedSequenceNode("tag:yaml.org,2002:seq", value, false, new Position.Range(new Position(0,0,0), new Position(0,3,3)));
+        Node node = getDocument("- a");
         assertEquals(expected, node);
     }
 }

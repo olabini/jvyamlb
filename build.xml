@@ -47,11 +47,7 @@
   </target>
 
   <target name="test" depends="compile-tests" description="Runs all tests">
-<<<<<<< HEAD:build.xml
-    <junit haltonfailure="true">
-=======
     <junit>
->>>>>>> positioning:build.xml
       <classpath refid="build.classpath"/>
       <classpath>
       	<pathelement location="${jvyamlb.classes.dir}"/>

@@ -231,6 +231,10 @@ public class ParserImpl implements Parser {
             return new AliasEvent(value);
         }
 
+        protected void parserException(final String when, final String what, final String note, final Token t) {
+            throw new ParserException(when, what, note);
+        }
+
         public Event produce(final int current, final IntStack parseStack, final Scanner scanner) {
             switch(current) {
             case P_STREAM: {
@@ -268,7 +272,7 @@ public class ParserImpl implements Parser {
                 Token tok = scanner.peekToken();
                 final Object[] directives = processDirectives(this,scanner);
                 if(!(scanner.peekToken() instanceof DocumentStartToken)) {
-                    throw new ParserException(null,"expected '<document start>', but found " + tok.getClass().getName(),null);
+                    parserException(null,"expected '<document start>', but found " + tok.getClass().getName(),null,scanner.peekToken());
                 }
                 scanner.getToken();
                 return getDocumentStart(true,(int[])directives[0],(Map)directives[1], tok);
@@ -350,7 +354,7 @@ public class ParserImpl implements Parser {
                     }
                     if(handle != null) {
                         if(!this.getTagHandles().containsKey(handle)) {
-                            throw new ParserException("while parsing a node","found undefined tag handle " + handle,null);
+                            parserException("while parsing a node","found undefined tag handle " + handle,null,tagToken);
                         }
                         if((ix = suffix.indexOf("/")) != -1) {
                             String before = suffix.substring(0,ix);
@@ -393,7 +397,7 @@ public class ParserImpl implements Parser {
                 } else if(tok instanceof ScalarToken) {
                     parseStack.push(P_SCALAR);
                 } else {
-                    throw new ParserException("while scanning a flow node","expected the node content, but found " + tok.getClass().getName(),null);
+                    parserException("while scanning a flow node","expected the node content, but found " + tok.getClass().getName(),null,tok);
                 }
                 return null;
             }
@@ -511,7 +515,7 @@ public class ParserImpl implements Parser {
                 Token tok = null;
                 if(!(scanner.peekToken() instanceof BlockEndToken)) {
                     tok = scanner.peekToken();
-                    throw new ParserException("while scanning a block collection","expected <block end>, but found " + tok.getClass().getName(),null);
+                    parserException("while scanning a block collection","expected <block end>, but found " + tok.getClass().getName(),null,tok);
                 }
                 return getSequenceEnd(scanner.getToken());
             }
@@ -523,7 +527,7 @@ public class ParserImpl implements Parser {
                 Token tok = null;
                 if(!(scanner.peekToken() instanceof BlockEndToken)) {
                     tok = scanner.peekToken();
-                    throw new ParserException("while scanning a block mapping","expected <block end>, but found " + tok.getClass().getName(),null);
+                    parserException("while scanning a block mapping","expected <block end>, but found " + tok.getClass().getName(),null,tok);
                 }
                 return getMappingEnd(scanner.getToken());
             }
@@ -697,19 +701,19 @@ public class ParserImpl implements Parser {
             final DirectiveToken tok = (DirectiveToken)scanner.getToken();
             if(tok.getName().equals("YAML")) {
                 if(env.getYamlVersion() != null) {
-                    throw new ParserException(null,"found duplicate YAML directive",null);
+                    env.parserException(null,"found duplicate YAML directive",null,tok);
                 }
                 final int major = Integer.parseInt(tok.getValue()[0]);
                 final int minor = Integer.parseInt(tok.getValue()[1]);
                 if(major != 1) {
-                    throw new ParserException(null,"found incompatible YAML document (version 1.* is required)",null);
+                    env.parserException(null,"found incompatible YAML document (version 1.* is required)",null,tok);
                 }
                 env.setYamlVersion(new int[]{major,minor});
             } else if(tok.getName().equals("TAG")) {
                 final String handle = tok.getValue()[0];
                 final String prefix = tok.getValue()[1];
                 if(env.getTagHandles().containsKey(handle)) {
-                    throw new ParserException(null,"duplicate tag handle " + handle,null);
+                    env.parserException(null,"duplicate tag handle " + handle,null,tok);
                 }
                 env.getTagHandles().put(handle,prefix);
             }

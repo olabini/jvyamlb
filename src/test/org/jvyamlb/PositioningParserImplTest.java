@@ -19,6 +19,8 @@ import org.jvyamlb.events.PositionedMappingEndEvent;
 import org.jvyamlb.events.PositionedSequenceStartEvent;
 import org.jvyamlb.events.PositionedSequenceEndEvent;
 import org.jvyamlb.events.PositionedAliasEvent;
+import org.jvyamlb.exceptions.ParserException;
+import org.jvyamlb.exceptions.PositionedParserException;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -389,4 +391,13 @@ public class PositioningParserImplTest extends YAMLTestCase {
         assertEquals(expected, events);
     }
 
+    public void testParserExceptionIncludesPositioningInformation() throws Exception {
+        try {
+            getParse("*foobar bla");
+            assertTrue("parsing should throw an exception", false);
+        } catch(ParserException e) {
+            assertTrue("Exception should be instance of PositionedParserException", e instanceof PositionedParserException);
+            assertEquals("Position should be correct for exception", new Position.Range(new Position(0,8,8),new Position(0,11,11)), ((PositionedParserException)e).getRange());
+        }
+    }
 }

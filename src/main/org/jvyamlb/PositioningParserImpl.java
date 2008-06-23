@@ -27,6 +27,7 @@ import org.jvyamlb.events.PositionedSequenceStartEvent;
 import org.jvyamlb.events.PositionedSequenceEndEvent;
 import org.jvyamlb.events.PositionedAliasEvent;
 import org.jvyamlb.events.AliasEvent;
+import org.jvyamlb.exceptions.PositionedParserException;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -101,6 +102,10 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
 
         protected AliasEvent getAlias(final String value, final Token t) {
             return new PositionedAliasEvent(value, ((Positionable)t).getRange());
+        }
+
+        protected void parserException(final String when, final String what, final String note, final Token t) {
+            throw new PositionedParserException(when, what, note, ((Positionable)t).getRange());
         }
     }
     

@@ -134,6 +134,8 @@ public class ParserImpl implements Parser {
     protected static class ProductionEnvironment {
         private List tags;
         private List anchors;
+        private List tagTokens;
+        private List anchorTokens;
         private Map tagHandles;
         private int[] yamlVersion;
         private int[] defaultYamlVersion;
@@ -141,6 +143,8 @@ public class ParserImpl implements Parser {
         public ProductionEnvironment(final YAMLConfig cfg) {
             this.tags = new LinkedList();
             this.anchors = new LinkedList();
+            this.tagTokens = new LinkedList();
+            this.anchorTokens = new LinkedList();
             this.tagHandles = new HashMap();
             this.yamlVersion = null;
             this.defaultYamlVersion = new int[2];
@@ -154,6 +158,14 @@ public class ParserImpl implements Parser {
 
         public List getAnchors() {
             return this.anchors;
+        }
+
+        public List getTagTokens() {
+            return this.tagTokens;
+        }
+
+        public List getAnchorTokens() {
+            return this.anchorTokens;
         }
 
         public Map getTagHandles() {
@@ -195,7 +207,7 @@ public class ParserImpl implements Parser {
             return DOCUMENT_END_TRUE;
         }
 
-        protected ScalarEvent getScalar(final String anchor, final String tag, final boolean[] implicit, final ByteList value, final char style, final Token t) {
+        protected ScalarEvent getScalar(final String anchor, final String tag, final boolean[] implicit, final ByteList value, final char style, final Token t, final Token anchorT, final Token tagT) {
             return new ScalarEvent(anchor, tag, implicit, value, style);
         }
 
@@ -301,22 +313,28 @@ public class ParserImpl implements Parser {
                 } else {
                     // Part of solution for JRUBY-718
                     boolean[] implicit = new boolean[]{false,false};
-                    return getScalar((String)this.getAnchors().get(0),(String)this.getTags().get(0),implicit,new ByteList(new byte[0],false),'\'', tok);
+                    return getScalar((String)this.getAnchors().get(0),(String)this.getTags().get(0),implicit,new ByteList(new byte[0],false),'\'', tok, (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
                 }
                 return null;
             }
             case P_PROPERTIES: {
                 String anchor = null;
                 Object tag = null;
+                Token anchorToken = null;
+                Token tagToken = null;
                 if(scanner.peekToken() instanceof AnchorToken) {
-                    anchor = ((AnchorToken)scanner.getToken()).getValue();
+                    anchorToken = scanner.getToken();
+                    anchor = ((AnchorToken)anchorToken).getValue();
                     if(scanner.peekToken() instanceof TagToken) {
-                        tag = ((TagToken)scanner.getToken()).getValue();
+                        tagToken = scanner.getToken();
+                        tag = ((TagToken)tagToken).getValue();
                     }
                 } else if(scanner.peekToken() instanceof TagToken) {
-                    tag = ((TagToken)scanner.getToken()).getValue();
+                    tagToken = scanner.getToken();
+                    tag = ((TagToken)tagToken).getValue();
                     if(scanner.peekToken() instanceof AnchorToken) {
-                        anchor = ((AnchorToken)scanner.getToken()).getValue();
+                        anchorToken = scanner.getToken();
+                        anchor = ((AnchorToken)anchorToken).getValue();
                     }
                 }
                 if(tag != null && !tag.equals("!")) {
@@ -351,11 +369,15 @@ public class ParserImpl implements Parser {
                 }
                 this.getAnchors().add(0,anchor);
                 this.getTags().add(0,tag);
+                this.getAnchorTokens().add(0,anchorToken);
+                this.getTagTokens().add(0,tagToken);
                 return null;
             }
             case P_PROPERTIES_END: {
                 this.getAnchors().remove(0);
                 this.getTags().remove(0);
+                this.getAnchorTokens().remove(0);
+                this.getTagTokens().remove(0);
                 return null;
             }
             case P_FLOW_CONTENT: {
@@ -405,7 +427,7 @@ public class ParserImpl implements Parser {
                 } else {
                     implicit = new boolean[]{false,false};
                 }
-                return getScalar((String)this.getAnchors().get(0),(String)this.getTags().get(0),implicit,tok.getValue(),tok.getStyle(), tok);
+                return getScalar((String)this.getAnchors().get(0),(String)this.getTags().get(0),implicit,tok.getValue(),tok.getStyle(), tok, (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_BLOCK_SEQUENCE_ENTRY: {
                 if(scanner.peekToken() instanceof BlockEntryToken) {
@@ -647,7 +669,7 @@ public class ParserImpl implements Parser {
                 return new AliasEvent(tok.getValue());
             }
             case P_EMPTY_SCALAR: {
-                return getScalar(null,null,new boolean[]{true,false},new ByteList(ByteList.NULL_ARRAY),(char)0, scanner.peekToken());
+                return getScalar(null,null,new boolean[]{true,false},new ByteList(ByteList.NULL_ARRAY),(char)0, scanner.peekToken(), null, null);
             }
             }
 

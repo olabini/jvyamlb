@@ -215,4 +215,30 @@ public class PositioningParserImplTest extends YAMLTestCase {
         assertEquals(expected, events);
     }
 
+    public void testScalarWithAnchor() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent("blad", null, new boolean[]{true,false}, s("a"), (char)0, new Position.Range(new Position(0,0,0), new Position(0,7,7))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,7,7))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,7,7))));
+
+        List events = getParse("&blad a");
+        assertEquals(expected, events);
+    }
+
+    public void testScalarWithAnchorAndTag() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent("blad", "!str", new boolean[]{false,false}, s("a"), (char)0, new Position.Range(new Position(0,0,0), new Position(0,12,12))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,12,12))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,12,12))));
+
+        List events = getParse("&blad !str a");
+        assertEquals(expected, events);
+
+        events = getParse("!str &blad a");
+        assertEquals(expected, events);
+    }
 }

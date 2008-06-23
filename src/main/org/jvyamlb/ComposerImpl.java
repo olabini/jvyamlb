@@ -36,7 +36,7 @@ import org.jruby.util.ByteList;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class ComposerImpl implements Composer {
-    private Parser parser;
+    protected Parser parser;
     private Resolver resolver;
     private Map anchors;
 
@@ -85,6 +85,10 @@ public class ComposerImpl implements Composer {
     private final static boolean[] FALS = new boolean[]{false};
     private final static boolean[] TRU = new boolean[]{true};
 
+    protected Node getScalar(final String tag, final ByteList value, final char style, final Event e) {
+        return new ScalarNode(tag,value,style);
+    }
+
     public Node composeNode(final Node parent, final Object index) {
         if(parser.peekEvent() instanceof AliasEvent) {
             final AliasEvent event = (AliasEvent)parser.getEvent();
@@ -107,7 +111,7 @@ public class ComposerImpl implements Composer {
             if(tag == null || tag.equals("!")) {
                 tag = resolver.resolve(ScalarNode.class,ev.getValue(),ev.getImplicit());
             }
-            node = new ScalarNode(tag,ev.getValue(),ev.getStyle());
+            node = getScalar(tag,ev.getValue(),ev.getStyle(),ev);
             if(null != anchor) {
                 anchors.put(anchor,node);
             }

@@ -25,6 +25,8 @@ import org.jvyamlb.events.SequenceStartEvent;
 import org.jvyamlb.events.SequenceEndEvent;
 import org.jvyamlb.events.PositionedSequenceStartEvent;
 import org.jvyamlb.events.PositionedSequenceEndEvent;
+import org.jvyamlb.events.PositionedAliasEvent;
+import org.jvyamlb.events.AliasEvent;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -81,6 +83,10 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
 
         protected SequenceEndEvent getSequenceEnd(final Token t) {
             return new PositionedSequenceEndEvent(new Position.Range(((Positionable)t).getPosition()));
+        }
+
+        protected AliasEvent getAlias(final String value, final Token t) {
+            return new PositionedAliasEvent(value, ((Positionable)t).getRange());
         }
     }
     

@@ -227,6 +227,10 @@ public class ParserImpl implements Parser {
             return SEQUENCE_END;
         }
 
+        protected AliasEvent getAlias(final String value, final Token t) {
+            return new AliasEvent(value);
+        }
+
         public Event produce(final int current, final IntStack parseStack, final Scanner scanner) {
             switch(current) {
             case P_STREAM: {
@@ -666,7 +670,7 @@ public class ParserImpl implements Parser {
             }
             case P_ALIAS: {
                 final AliasToken tok = (AliasToken)scanner.getToken();
-                return new AliasEvent(tok.getValue());
+                return getAlias(tok.getValue(), tok);
             }
             case P_EMPTY_SCALAR: {
                 return getScalar(null,null,new boolean[]{true,false},new ByteList(ByteList.NULL_ARRAY),(char)0, scanner.peekToken(), null, null);

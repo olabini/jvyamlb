@@ -247,7 +247,7 @@ public class PositioningParserImplTest extends YAMLTestCase {
         List expected = new ArrayList();
         expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
         expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
-        expected.add(new PositionedAliasEvent(s("blad"), new Position.Range(new Position(0,0,0), new Position(0,5,5))));
+        expected.add(new PositionedAliasEvent("blad", new Position.Range(new Position(0,0,0), new Position(0,5,5))));
         expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,5,5))));
         expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,5,5))));
 

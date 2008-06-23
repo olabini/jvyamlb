@@ -124,16 +124,18 @@ public class ParserImpl implements Parser {
         productionNames[45]="P_EMPTY_SCALAR";
     }
 
-    private final static Event DOCUMENT_END_TRUE = new DocumentEndEvent(true);
-    private final static Event DOCUMENT_END_FALSE = new DocumentEndEvent(false);
-    private final static Event MAPPING_END = new MappingEndEvent();
-    private final static Event SEQUENCE_END = new SequenceEndEvent();
-    private final static Event STREAM_END = new StreamEndEvent();
-    private final static Event STREAM_START = new StreamStartEvent();
+    private final static DocumentEndEvent DOCUMENT_END_TRUE = new DocumentEndEvent(true);
+    private final static DocumentEndEvent DOCUMENT_END_FALSE = new DocumentEndEvent(false);
+    private final static MappingEndEvent MAPPING_END = new MappingEndEvent();
+    private final static SequenceEndEvent SEQUENCE_END = new SequenceEndEvent();
+    private final static StreamEndEvent STREAM_END = new StreamEndEvent();
+    private final static StreamStartEvent STREAM_START = new StreamStartEvent();
 
-    private static class ProductionEnvironment {
+    protected static class ProductionEnvironment {
         private List tags;
         private List anchors;
+        private List tagTokens;
+        private List anchorTokens;
         private Map tagHandles;
         private int[] yamlVersion;
         private int[] defaultYamlVersion;
@@ -141,6 +143,8 @@ public class ParserImpl implements Parser {
         public ProductionEnvironment(final YAMLConfig cfg) {
             this.tags = new LinkedList();
             this.anchors = new LinkedList();
+            this.tagTokens = new LinkedList();
+            this.anchorTokens = new LinkedList();
             this.tagHandles = new HashMap();
             this.yamlVersion = null;
             this.defaultYamlVersion = new int[2];
@@ -154,6 +158,14 @@ public class ParserImpl implements Parser {
 
         public List getAnchors() {
             return this.anchors;
+        }
+
+        public List getTagTokens() {
+            return this.tagTokens;
+        }
+
+        public List getAnchorTokens() {
+            return this.anchorTokens;
         }
 
         public Map getTagHandles() {
@@ -175,6 +187,54 @@ public class ParserImpl implements Parser {
             this.yamlVersion = yamlVersion;
         }
 
+        protected StreamStartEvent getStreamStart(final Token t) {
+            return STREAM_START;
+        }
+
+        protected StreamEndEvent getStreamEnd(final Token t) {
+            return STREAM_END;
+        }
+
+        protected DocumentStartEvent getDocumentStart(final boolean explicit, final int[] version, final Map tags, final Token t) {
+            return new DocumentStartEvent(explicit, version, tags);
+        }
+
+        protected DocumentEndEvent getDocumentEndImplicit(final Token t) {
+            return DOCUMENT_END_FALSE;
+        }
+
+        protected DocumentEndEvent getDocumentEndExplicit(final Token t) {
+            return DOCUMENT_END_TRUE;
+        }
+
+        protected ScalarEvent getScalar(final String anchor, final String tag, final boolean[] implicit, final ByteList value, final char style, final Token t, final Token anchorT, final Token tagT) {
+            return new ScalarEvent(anchor, tag, implicit, value, style);
+        }
+
+        protected MappingStartEvent getMappingStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t, final Token anchorT, final Token tagT) {
+            return new MappingStartEvent(anchor, tag, implicit, flowStyle);
+        }
+
+        protected MappingEndEvent getMappingEnd(final Token t) {
+            return MAPPING_END;
+        }
+
+        protected SequenceStartEvent getSequenceStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t, final Token anchorT, final Token tagT) {
+            return new SequenceStartEvent(anchor, tag, implicit, flowStyle);
+        }
+
+        protected SequenceEndEvent getSequenceEnd(final Token t) {
+            return SEQUENCE_END;
+        }
+
+        protected AliasEvent getAlias(final String value, final Token t) {
+            return new AliasEvent(value);
+        }
+
+        protected void parserException(final String when, final String what, final String note, final Token t) {
+            throw new ParserException(when, what, note);
+        }
+
         public Event produce(final int current, final IntStack parseStack, final Scanner scanner) {
             switch(current) {
             case P_STREAM: {
@@ -185,12 +245,10 @@ public class ParserImpl implements Parser {
                 return null;
             }
             case P_STREAM_START: {
-                scanner.getToken();
-                return STREAM_START;
+                return getStreamStart(scanner.getToken());
             }
             case P_STREAM_END: {
-                scanner.getToken();
-                return STREAM_END;
+                return getStreamEnd(scanner.getToken());
             }
             case P_IMPLICIT_DOCUMENT: {
                 final Token curr = scanner.peekToken();
@@ -214,23 +272,24 @@ public class ParserImpl implements Parser {
                 Token tok = scanner.peekToken();
                 final Object[] directives = processDirectives(this,scanner);
                 if(!(scanner.peekToken() instanceof DocumentStartToken)) {
-                    throw new ParserException(null,"expected '<document start>', but found " + tok.getClass().getName(),null);
+                    parserException(null,"expected '<document start>', but found " + tok.getClass().getName(),null,scanner.peekToken());
                 }
                 scanner.getToken();
-                return new DocumentStartEvent(true,(int[])directives[0],(Map)directives[1]);
+                return getDocumentStart(true,(int[])directives[0],(Map)directives[1], tok);
             }
             case P_DOCUMENT_START_IMPLICIT: {
+                Token tok = scanner.peekToken();
                 final Object[] directives = processDirectives(this,scanner);
-                return new DocumentStartEvent(false,(int[])directives[0],(Map)directives[1]);
+                return getDocumentStart(false,(int[])directives[0],(Map)directives[1], tok);
             }
             case P_DOCUMENT_END: {
                 Token tok = scanner.peekToken();
                 boolean explicit = false;
                 while(scanner.peekToken() instanceof DocumentEndToken) {
-                    scanner.getToken();
+                    tok = scanner.getToken();
                     explicit = true;
                 }
-                return explicit ? DOCUMENT_END_TRUE : DOCUMENT_END_FALSE;
+                return explicit ? getDocumentEndExplicit(tok) : getDocumentEndImplicit(tok);
             }
             case P_BLOCK_NODE: {
                 final Token curr = scanner.peekToken();
@@ -262,22 +321,28 @@ public class ParserImpl implements Parser {
                 } else {
                     // Part of solution for JRUBY-718
                     boolean[] implicit = new boolean[]{false,false};
-                    return new ScalarEvent((String)this.getAnchors().get(0),(String)this.getTags().get(0),implicit,new ByteList(new byte[0],false),'\'');
+                    return getScalar((String)this.getAnchors().get(0),(String)this.getTags().get(0),implicit,new ByteList(new byte[0],false),'\'', tok, (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
                 }
                 return null;
             }
             case P_PROPERTIES: {
                 String anchor = null;
                 Object tag = null;
+                Token anchorToken = null;
+                Token tagToken = null;
                 if(scanner.peekToken() instanceof AnchorToken) {
-                    anchor = ((AnchorToken)scanner.getToken()).getValue();
+                    anchorToken = scanner.getToken();
+                    anchor = ((AnchorToken)anchorToken).getValue();
                     if(scanner.peekToken() instanceof TagToken) {
-                        tag = ((TagToken)scanner.getToken()).getValue();
+                        tagToken = scanner.getToken();
+                        tag = ((TagToken)tagToken).getValue();
                     }
                 } else if(scanner.peekToken() instanceof TagToken) {
-                    tag = ((TagToken)scanner.getToken()).getValue();
+                    tagToken = scanner.getToken();
+                    tag = ((TagToken)tagToken).getValue();
                     if(scanner.peekToken() instanceof AnchorToken) {
-                        anchor = ((AnchorToken)scanner.getToken()).getValue();
+                        anchorToken = scanner.getToken();
+                        anchor = ((AnchorToken)anchorToken).getValue();
                     }
                 }
                 if(tag != null && !tag.equals("!")) {
@@ -289,7 +354,7 @@ public class ParserImpl implements Parser {
                     }
                     if(handle != null) {
                         if(!this.getTagHandles().containsKey(handle)) {
-                            throw new ParserException("while parsing a node","found undefined tag handle " + handle,null);
+                            parserException("while parsing a node","found undefined tag handle " + handle,null,tagToken);
                         }
                         if((ix = suffix.indexOf("/")) != -1) {
                             String before = suffix.substring(0,ix);
@@ -312,11 +377,15 @@ public class ParserImpl implements Parser {
                 }
                 this.getAnchors().add(0,anchor);
                 this.getTags().add(0,tag);
+                this.getAnchorTokens().add(0,anchorToken);
+                this.getTagTokens().add(0,tagToken);
                 return null;
             }
             case P_PROPERTIES_END: {
                 this.getAnchors().remove(0);
                 this.getTags().remove(0);
+                this.getAnchorTokens().remove(0);
+                this.getTagTokens().remove(0);
                 return null;
             }
             case P_FLOW_CONTENT: {
@@ -328,7 +397,7 @@ public class ParserImpl implements Parser {
                 } else if(tok instanceof ScalarToken) {
                     parseStack.push(P_SCALAR);
                 } else {
-                    throw new ParserException("while scanning a flow node","expected the node content, but found " + tok.getClass().getName(),null);
+                    parserException("while scanning a flow node","expected the node content, but found " + tok.getClass().getName(),null,tok);
                 }
                 return null;
             }
@@ -366,7 +435,7 @@ public class ParserImpl implements Parser {
                 } else {
                     implicit = new boolean[]{false,false};
                 }
-                return new ScalarEvent((String)this.getAnchors().get(0),(String)this.getTags().get(0),implicit,tok.getValue(),tok.getStyle());
+                return getScalar((String)this.getAnchors().get(0),(String)this.getTags().get(0),implicit,tok.getValue(),tok.getStyle(), tok, (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_BLOCK_SEQUENCE_ENTRY: {
                 if(scanner.peekToken() instanceof BlockEntryToken) {
@@ -440,31 +509,27 @@ public class ParserImpl implements Parser {
             }
             case P_BLOCK_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                scanner.getToken();
-                return new SequenceStartEvent((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false);
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false,scanner.getToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_BLOCK_SEQUENCE_END: {
                 Token tok = null;
                 if(!(scanner.peekToken() instanceof BlockEndToken)) {
                     tok = scanner.peekToken();
-                    throw new ParserException("while scanning a block collection","expected <block end>, but found " + tok.getClass().getName(),null);
+                    parserException("while scanning a block collection","expected <block end>, but found " + tok.getClass().getName(),null,tok);
                 }
-                scanner.getToken();
-                return SEQUENCE_END;
+                return getSequenceEnd(scanner.getToken());
             }
             case P_BLOCK_MAPPING_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                scanner.getToken();
-                return new MappingStartEvent((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false);
+                return getMappingStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false,scanner.getToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_BLOCK_MAPPING_END: {
                 Token tok = null;
                 if(!(scanner.peekToken() instanceof BlockEndToken)) {
                     tok = scanner.peekToken();
-                    throw new ParserException("while scanning a block mapping","expected <block end>, but found " + tok.getClass().getName(),null);
+                    parserException("while scanning a block mapping","expected <block end>, but found " + tok.getClass().getName(),null,tok);
                 }
-                scanner.getToken();
-                return MAPPING_END;
+                return getMappingEnd(scanner.getToken());
             }
             case P_INDENTLESS_BLOCK_SEQUENCE: {
                 parseStack.push(P_BLOCK_INDENTLESS_SEQUENCE_END);
@@ -474,7 +539,7 @@ public class ParserImpl implements Parser {
             }
             case P_BLOCK_INDENTLESS_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                return new SequenceStartEvent((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit, false);
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit, false, scanner.peekToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_INDENTLESS_BLOCK_SEQUENCE_ENTRY: {
                 if(scanner.peekToken() instanceof BlockEntryToken) {
@@ -491,12 +556,11 @@ public class ParserImpl implements Parser {
                 return null;
             }
             case P_BLOCK_INDENTLESS_SEQUENCE_END: {
-                return SEQUENCE_END;
+                return getSequenceEnd(scanner.peekToken());
             }
             case P_FLOW_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                scanner.getToken();
-                return new SequenceStartEvent((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true);
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true,scanner.getToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_FLOW_SEQUENCE_ENTRY: {
                 if(!(scanner.peekToken() instanceof FlowSequenceEndToken)) {
@@ -516,13 +580,11 @@ public class ParserImpl implements Parser {
                 return null;
             }
             case P_FLOW_SEQUENCE_END: {
-                scanner.getToken();
-                return SEQUENCE_END;
+                return getSequenceEnd(scanner.getToken());
             }
             case P_FLOW_MAPPING_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                scanner.getToken();
-                return new MappingStartEvent((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true);
+                return getMappingStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true, scanner.getToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_FLOW_MAPPING_ENTRY: {
                 if(!(scanner.peekToken() instanceof FlowMappingEndToken)) {
@@ -541,12 +603,10 @@ public class ParserImpl implements Parser {
                 return null;
             }
             case P_FLOW_MAPPING_END: {
-                scanner.getToken();
-                return MAPPING_END;
+                return getMappingEnd(scanner.getToken());
             }
             case P_FLOW_INTERNAL_MAPPING_START: {
-                scanner.getToken();
-                return new MappingStartEvent(null,null,true,true);
+                return getMappingStart(null,null,true,true, scanner.getToken(), null, null);
             }
             case P_FLOW_INTERNAL_CONTENT: {
                 final Token curr = scanner.peekToken();
@@ -571,7 +631,7 @@ public class ParserImpl implements Parser {
                 return null;
             }
             case P_FLOW_INTERNAL_MAPPING_END: {
-                return MAPPING_END;
+                return getMappingEnd(scanner.peekToken());
             }
             case P_FLOW_ENTRY_MARKER: {
                 if(scanner.peekToken() instanceof FlowEntryToken) {
@@ -614,10 +674,10 @@ public class ParserImpl implements Parser {
             }
             case P_ALIAS: {
                 final AliasToken tok = (AliasToken)scanner.getToken();
-                return new AliasEvent(tok.getValue());
+                return getAlias(tok.getValue(), tok);
             }
             case P_EMPTY_SCALAR: {
-                return processEmptyScalar();
+                return getScalar(null,null,new boolean[]{true,false},new ByteList(ByteList.NULL_ARRAY),(char)0, scanner.peekToken(), null, null);
             }
             }
 
@@ -636,28 +696,24 @@ public class ParserImpl implements Parser {
     }
     private final static Pattern ONLY_WORD = Pattern.compile("^\\w+$");
 
-    private static Event processEmptyScalar() {
-        return new ScalarEvent(null,null,new boolean[]{true,false},new ByteList(ByteList.NULL_ARRAY),(char)0);
-    }
-
     private static Object[] processDirectives(final ProductionEnvironment env, final Scanner scanner) {
         while(scanner.peekToken() instanceof DirectiveToken) {
             final DirectiveToken tok = (DirectiveToken)scanner.getToken();
             if(tok.getName().equals("YAML")) {
                 if(env.getYamlVersion() != null) {
-                    throw new ParserException(null,"found duplicate YAML directive",null);
+                    env.parserException(null,"found duplicate YAML directive",null,tok);
                 }
                 final int major = Integer.parseInt(tok.getValue()[0]);
                 final int minor = Integer.parseInt(tok.getValue()[1]);
                 if(major != 1) {
-                    throw new ParserException(null,"found incompatible YAML document (version 1.* is required)",null);
+                    env.parserException(null,"found incompatible YAML document (version 1.* is required)",null,tok);
                 }
                 env.setYamlVersion(new int[]{major,minor});
             } else if(tok.getName().equals("TAG")) {
                 final String handle = tok.getValue()[0];
                 final String prefix = tok.getValue()[1];
                 if(env.getTagHandles().containsKey(handle)) {
-                    throw new ParserException(null,"duplicate tag handle " + handle,null);
+                    env.parserException(null,"duplicate tag handle " + handle,null,tok);
                 }
                 env.getTagHandles().put(handle,prefix);
             }
@@ -679,7 +735,7 @@ public class ParserImpl implements Parser {
         return value;
     }
 
-    private Scanner scanner = null;
+    protected Scanner scanner = null;
     private YAMLConfig cfg = null;
 
     public ParserImpl(final Scanner scanner) {
@@ -753,11 +809,15 @@ public class ParserImpl implements Parser {
     private IntStack parseStack = null;
     private ProductionEnvironment pEnv = null;
 
+    protected ProductionEnvironment getEnvironment(YAMLConfig cfg) {
+        return new ProductionEnvironment(cfg);
+    }
+
     public void parseStream() {
         if(null == parseStack) {
             this.parseStack = new IntStack();
             this.parseStack.push(P_STREAM);
-            this.pEnv = new ProductionEnvironment(cfg);
+            this.pEnv = getEnvironment(cfg);
         }
     }
 

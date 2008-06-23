@@ -254,4 +254,49 @@ public class PositioningParserImplTest extends YAMLTestCase {
         List events = getParse("*blad");
         assertEquals(expected, events);
     }
+
+    public void testSequenceWithTag() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedSequenceStartEvent(null, "!seq", false, true, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("a"), (char)0, new Position.Range(new Position(0,6,6), new Position(0,7,7))));
+        expected.add(new PositionedSequenceEndEvent(new Position.Range(new Position(0,7,7))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,8,8))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,8,8))));
+
+        List events = getParse("!seq [a]");
+        assertEquals(expected, events);
+    }
+
+    public void testSequenceWithAnchor() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedSequenceStartEvent("blad", null, true, true, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("a"), (char)0, new Position.Range(new Position(0,7,7), new Position(0,8,8))));
+        expected.add(new PositionedSequenceEndEvent(new Position.Range(new Position(0,8,8))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,9,9))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,9,9))));
+
+        List events = getParse("&blad [a]");
+        assertEquals(expected, events);
+    }
+
+    public void testSequenceWithAnchorAndTag() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedSequenceStartEvent("blad", "!seq", false, true, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("a"), (char)0, new Position.Range(new Position(0,12,12), new Position(0,13,13))));
+        expected.add(new PositionedSequenceEndEvent(new Position.Range(new Position(0,13,13))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,14,14))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,14,14))));
+
+        List events = getParse("&blad !seq [a]");
+        assertEquals(expected, events);
+
+        events = getParse("!seq &blad [a]");
+        assertEquals(expected, events);
+    }
 }

@@ -77,8 +77,15 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
             return new PositionedMappingEndEvent(new Position.Range(((Positionable)t).getPosition()));
         }
 
-        protected SequenceStartEvent getSequenceStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t) {
-            return new PositionedSequenceStartEvent(anchor, tag, implicit, flowStyle, new Position.Range(((Positionable)t).getPosition()));
+        protected SequenceStartEvent getSequenceStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t, final Token anchorT, final Token tagT) {
+            Position position = ((Positionable)t).getPosition();
+            if(null != anchorT && ((Positionable)anchorT).getRange().start.offset < position.offset) {
+                position = ((Positionable)anchorT).getRange().start;
+            }
+            if(null != tagT && ((Positionable)tagT).getRange().start.offset < position.offset) {
+                position = ((Positionable)tagT).getRange().start;
+            }
+            return new PositionedSequenceStartEvent(anchor, tag, implicit, flowStyle, new Position.Range(position));
         }
 
         protected SequenceEndEvent getSequenceEnd(final Token t) {

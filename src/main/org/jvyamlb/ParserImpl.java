@@ -219,7 +219,7 @@ public class ParserImpl implements Parser {
             return MAPPING_END;
         }
 
-        protected SequenceStartEvent getSequenceStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t) {
+        protected SequenceStartEvent getSequenceStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t, final Token anchorT, final Token tagT) {
             return new SequenceStartEvent(anchor, tag, implicit, flowStyle);
         }
 
@@ -505,7 +505,7 @@ public class ParserImpl implements Parser {
             }
             case P_BLOCK_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false,scanner.getToken());
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false,scanner.getToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_BLOCK_SEQUENCE_END: {
                 Token tok = null;
@@ -535,7 +535,7 @@ public class ParserImpl implements Parser {
             }
             case P_BLOCK_INDENTLESS_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit, false, scanner.peekToken());
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit, false, scanner.peekToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_INDENTLESS_BLOCK_SEQUENCE_ENTRY: {
                 if(scanner.peekToken() instanceof BlockEntryToken) {
@@ -556,7 +556,7 @@ public class ParserImpl implements Parser {
             }
             case P_FLOW_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true,scanner.getToken());
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true,scanner.getToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_FLOW_SEQUENCE_ENTRY: {
                 if(!(scanner.peekToken() instanceof FlowSequenceEndToken)) {

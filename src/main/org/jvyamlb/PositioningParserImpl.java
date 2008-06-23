@@ -21,6 +21,10 @@ import org.jvyamlb.events.MappingStartEvent;
 import org.jvyamlb.events.MappingEndEvent;
 import org.jvyamlb.events.PositionedMappingStartEvent;
 import org.jvyamlb.events.PositionedMappingEndEvent;
+import org.jvyamlb.events.SequenceStartEvent;
+import org.jvyamlb.events.SequenceEndEvent;
+import org.jvyamlb.events.PositionedSequenceStartEvent;
+import org.jvyamlb.events.PositionedSequenceEndEvent;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -61,6 +65,14 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
 
         protected MappingEndEvent getMappingEnd(final Token t) {
             return new PositionedMappingEndEvent(new Position.Range(((Positionable)t).getPosition()));
+        }
+
+        protected SequenceStartEvent getSequenceStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t) {
+            return new PositionedSequenceStartEvent(anchor, tag, implicit, flowStyle, new Position.Range(((Positionable)t).getPosition()));
+        }
+
+        protected SequenceEndEvent getSequenceEnd(final Token t) {
+            return new PositionedSequenceEndEvent(new Position.Range(((Positionable)t).getPosition()));
         }
     }
     

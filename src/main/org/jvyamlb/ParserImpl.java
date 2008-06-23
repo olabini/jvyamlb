@@ -207,6 +207,14 @@ public class ParserImpl implements Parser {
             return MAPPING_END;
         }
 
+        protected SequenceStartEvent getSequenceStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t) {
+            return new SequenceStartEvent(anchor, tag, implicit, flowStyle);
+        }
+
+        protected SequenceEndEvent getSequenceEnd(final Token t) {
+            return SEQUENCE_END;
+        }
+
         public Event produce(final int current, final IntStack parseStack, final Scanner scanner) {
             switch(current) {
             case P_STREAM: {
@@ -471,8 +479,7 @@ public class ParserImpl implements Parser {
             }
             case P_BLOCK_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                scanner.getToken();
-                return new SequenceStartEvent((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false);
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false,scanner.getToken());
             }
             case P_BLOCK_SEQUENCE_END: {
                 Token tok = null;
@@ -480,8 +487,7 @@ public class ParserImpl implements Parser {
                     tok = scanner.peekToken();
                     throw new ParserException("while scanning a block collection","expected <block end>, but found " + tok.getClass().getName(),null);
                 }
-                scanner.getToken();
-                return SEQUENCE_END;
+                return getSequenceEnd(scanner.getToken());
             }
             case P_BLOCK_MAPPING_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
@@ -503,7 +509,7 @@ public class ParserImpl implements Parser {
             }
             case P_BLOCK_INDENTLESS_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                return new SequenceStartEvent((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit, false);
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit, false, scanner.peekToken());
             }
             case P_INDENTLESS_BLOCK_SEQUENCE_ENTRY: {
                 if(scanner.peekToken() instanceof BlockEntryToken) {
@@ -520,12 +526,11 @@ public class ParserImpl implements Parser {
                 return null;
             }
             case P_BLOCK_INDENTLESS_SEQUENCE_END: {
-                return SEQUENCE_END;
+                return getSequenceEnd(scanner.peekToken());
             }
             case P_FLOW_SEQUENCE_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                scanner.getToken();
-                return new SequenceStartEvent((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true);
+                return getSequenceStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true,scanner.getToken());
             }
             case P_FLOW_SEQUENCE_ENTRY: {
                 if(!(scanner.peekToken() instanceof FlowSequenceEndToken)) {
@@ -545,8 +550,7 @@ public class ParserImpl implements Parser {
                 return null;
             }
             case P_FLOW_SEQUENCE_END: {
-                scanner.getToken();
-                return SEQUENCE_END;
+                return getSequenceEnd(scanner.getToken());
             }
             case P_FLOW_MAPPING_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");

@@ -18,6 +18,7 @@ import org.jvyamlb.events.PositionedMappingStartEvent;
 import org.jvyamlb.events.PositionedMappingEndEvent;
 import org.jvyamlb.events.PositionedSequenceStartEvent;
 import org.jvyamlb.events.PositionedSequenceEndEvent;
+import org.jvyamlb.events.PositionedAliasEvent;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -239,6 +240,18 @@ public class PositioningParserImplTest extends YAMLTestCase {
         assertEquals(expected, events);
 
         events = getParse("!str &blad a");
+        assertEquals(expected, events);
+    }
+
+    public void testAlias() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedAliasEvent(s("blad"), new Position.Range(new Position(0,0,0), new Position(0,5,5))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,5,5))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,5,5))));
+
+        List events = getParse("*blad");
         assertEquals(expected, events);
     }
 }

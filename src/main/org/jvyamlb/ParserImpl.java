@@ -211,7 +211,7 @@ public class ParserImpl implements Parser {
             return new ScalarEvent(anchor, tag, implicit, value, style);
         }
 
-        protected MappingStartEvent getMappingStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t) {
+        protected MappingStartEvent getMappingStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t, final Token anchorT, final Token tagT) {
             return new MappingStartEvent(anchor, tag, implicit, flowStyle);
         }
 
@@ -517,7 +517,7 @@ public class ParserImpl implements Parser {
             }
             case P_BLOCK_MAPPING_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                return getMappingStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false,scanner.getToken());
+                return getMappingStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,false,scanner.getToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_BLOCK_MAPPING_END: {
                 Token tok = null;
@@ -580,7 +580,7 @@ public class ParserImpl implements Parser {
             }
             case P_FLOW_MAPPING_START: {
                 final boolean implicit = this.getTags().get(0) == null || this.getTags().get(0).equals("!");
-                return getMappingStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true, scanner.getToken());
+                return getMappingStart((String)this.getAnchors().get(0), (String)this.getTags().get(0), implicit,true, scanner.getToken(), (Token)this.getAnchorTokens().get(0), (Token)this.getTagTokens().get(0));
             }
             case P_FLOW_MAPPING_ENTRY: {
                 if(!(scanner.peekToken() instanceof FlowMappingEndToken)) {
@@ -602,7 +602,7 @@ public class ParserImpl implements Parser {
                 return getMappingEnd(scanner.getToken());
             }
             case P_FLOW_INTERNAL_MAPPING_START: {
-                return getMappingStart(null,null,true,true, scanner.getToken());
+                return getMappingStart(null,null,true,true, scanner.getToken(), null, null);
             }
             case P_FLOW_INTERNAL_CONTENT: {
                 final Token curr = scanner.peekToken();

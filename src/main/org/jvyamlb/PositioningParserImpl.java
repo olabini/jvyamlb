@@ -69,8 +69,15 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
             return new PositionedScalarEvent(anchor, tag, implicit, value, style, range);
         }
 
-        protected MappingStartEvent getMappingStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t) {
-            return new PositionedMappingStartEvent(anchor, tag, implicit, flowStyle, new Position.Range(((Positionable)t).getPosition()));
+        protected MappingStartEvent getMappingStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t, final Token anchorT, final Token tagT) {
+            Position position = ((Positionable)t).getPosition();
+            if(null != anchorT && ((Positionable)anchorT).getRange().start.offset < position.offset) {
+                position = ((Positionable)anchorT).getRange().start;
+            }
+            if(null != tagT && ((Positionable)tagT).getRange().start.offset < position.offset) {
+                position = ((Positionable)tagT).getRange().start;
+            }
+            return new PositionedMappingStartEvent(anchor, tag, implicit, flowStyle, new Position.Range(position));
         }
 
         protected MappingEndEvent getMappingEnd(final Token t) {

@@ -299,4 +299,53 @@ public class PositioningParserImplTest extends YAMLTestCase {
         events = getParse("!seq &blad [a]");
         assertEquals(expected, events);
     }
+
+
+    public void testMappingWithTag() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedMappingStartEvent(null, "!map", false, true, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("a"), (char)0, new Position.Range(new Position(0,6,6), new Position(0,7,7))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("b"), (char)0, new Position.Range(new Position(0,9,9), new Position(0,10,10))));
+        expected.add(new PositionedMappingEndEvent(new Position.Range(new Position(0,10,10))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,11,11))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,11,11))));
+
+        List events = getParse("!map {a: b}");
+        assertEquals(expected, events);
+    }
+
+    public void testMappingWithAnchor() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedMappingStartEvent("blad", null, true, true, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("a"), (char)0, new Position.Range(new Position(0,7,7), new Position(0,8,8))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("b"), (char)0, new Position.Range(new Position(0,10,10), new Position(0,11,11))));
+        expected.add(new PositionedMappingEndEvent(new Position.Range(new Position(0,11,11))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,12,12))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,12,12))));
+
+        List events = getParse("&blad {a: b}");
+        assertEquals(expected, events);
+    }
+
+    public void testMappingWithAnchorAndTag() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedMappingStartEvent("blad", "!map", false, true, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("a"), (char)0, new Position.Range(new Position(0,12,12), new Position(0,13,13))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("b"), (char)0, new Position.Range(new Position(0,15,15), new Position(0,16,16))));
+        expected.add(new PositionedMappingEndEvent(new Position.Range(new Position(0,16,16))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,17,17))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,17,17))));
+
+        List events = getParse("&blad !map {a: b}");
+        assertEquals(expected, events);
+
+        events = getParse("!map &blad {a: b}");
+        assertEquals(expected, events);
+    }
 }

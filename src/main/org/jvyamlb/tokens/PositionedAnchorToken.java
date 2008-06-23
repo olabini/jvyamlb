@@ -6,11 +6,12 @@ package org.jvyamlb.tokens;
 import org.jruby.util.ByteList;
 
 import org.jvyamlb.Position;
+import org.jvyamlb.Positionable;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class PositionedAnchorToken extends AnchorToken {
+public class PositionedAnchorToken extends AnchorToken implements Positionable {
     private Position.Range range;
 
     public PositionedAnchorToken(final Position.Range range) {

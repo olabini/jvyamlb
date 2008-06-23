@@ -7,11 +7,12 @@ import org.jruby.util.ByteList;
 
 import org.jvyamlb.Position;
 import java.util.Arrays;
+import org.jvyamlb.Positionable;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class PositionedTagToken extends TagToken {
+public class PositionedTagToken extends TagToken implements Positionable {
     private Position.Range range;
 
     public PositionedTagToken(final ByteList[] value, final Position.Range range) {

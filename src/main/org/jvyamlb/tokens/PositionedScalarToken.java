@@ -6,11 +6,12 @@ package org.jvyamlb.tokens;
 import org.jruby.util.ByteList;
 
 import org.jvyamlb.Position;
+import org.jvyamlb.Positionable;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class PositionedScalarToken extends ScalarToken {
+public class PositionedScalarToken extends ScalarToken implements Positionable {
     private Position.Range range;
 
     public PositionedScalarToken(final ByteList value, final boolean plain, final Position.Range range) {

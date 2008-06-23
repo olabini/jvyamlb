@@ -6,11 +6,12 @@ package org.jvyamlb.tokens;
 import org.jruby.util.ByteList;
 
 import org.jvyamlb.Position;
+import org.jvyamlb.Positionable;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class PositionedAliasToken extends AliasToken {
+public class PositionedAliasToken extends AliasToken implements Positionable {
     private Position.Range range;
 
     public PositionedAliasToken(final Position.Range range) {

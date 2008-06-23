@@ -7,11 +7,12 @@ import org.jruby.util.ByteList;
 
 import org.jvyamlb.Position;
 import java.util.Arrays;
+import org.jvyamlb.Positionable;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
-public class PositionedDirectiveToken extends DirectiveToken {
+public class PositionedDirectiveToken extends DirectiveToken implements Positionable {
     private Position.Range range;
 
     public PositionedDirectiveToken(final String name, final String[] value, final Position.Range range) {

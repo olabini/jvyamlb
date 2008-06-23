@@ -348,4 +348,45 @@ public class PositioningParserImplTest extends YAMLTestCase {
         events = getParse("!map &blad {a: b}");
         assertEquals(expected, events);
     }
+
+    public void testLiteralScalar() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{false,true}, s("abc\nfoobar"), '|', new Position.Range(new Position(0,0,0), new Position(2,7,14))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(2,7,14))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(2,7,14))));
+
+        List events = getParse("|\n"+
+                               " abc\n"+
+                               " foobar");
+        assertEquals(expected, events);
+    }
+
+    public void testFoldedScalar() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{false,true}, s("abc foobar"), '>', new Position.Range(new Position(0,0,0), new Position(2,7,14))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(2,7,14))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(2,7,14))));
+
+        List events = getParse(">\n"+
+                               " abc\n"+
+                               " foobar");
+        assertEquals(expected, events);
+    }
+
+    public void testSingleQuotedScalar() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{false,true}, s("abc"), '\'', new Position.Range(new Position(0,0,0), new Position(0,5,5))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(0,5,5))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(0,5,5))));
+
+        List events = getParse("'abc'");
+        assertEquals(expected, events);
+    }
+
 }

@@ -26,6 +26,7 @@ import org.jvyamlb.tokens.PositionedFlowEntryToken;
 import org.jvyamlb.tokens.PositionedTagToken;
 import org.jvyamlb.tokens.PositionedAliasToken;
 import org.jvyamlb.tokens.PositionedAnchorToken;
+import org.jvyamlb.tokens.PositionedDirectiveToken;
 import org.jruby.util.ByteList;
 
 /**
@@ -271,16 +272,42 @@ public class PositioningScannerImplTest extends YAMLTestCase {
     public void testDirective() throws Exception {
         List expected = new ArrayList();
         expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
-        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDirectiveToken("YAML", new String[]{"1","0"}, new Position.Range(new Position(0,0,0), new Position(0,9,9))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,9,9))));
 
         List tokens = getScan("%YAML 1.0");
+        assertEquals(expected, tokens);
+    }
+
+    public void testDoubleDirective() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDirectiveToken("YAML", new String[]{"1","0"}, new Position.Range(new Position(0,0,0), new Position(0,9,9))));
+        expected.add(new PositionedDirectiveToken("TAG", new String[]{"!","abc"}, new Position.Range(new Position(1,0,10), new Position(1,10,20))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(2,0,21))));
+
+        List tokens = getScan("%YAML 1.0\n"+
+                              "%TAG ! abc\n");
+        assertEquals(expected, tokens);
+    }
+
+    public void testDoubleDirectiveWithoutNewlineEnd() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDirectiveToken("YAML", new String[]{"1","0"}, new Position.Range(new Position(0,0,0), new Position(0,9,9))));
+        expected.add(new PositionedDirectiveToken("TAG", new String[]{"!","abc"}, new Position.Range(new Position(1,0,10), new Position(1,10,20))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(1,10,20))));
+
+        List tokens = getScan("%YAML 1.0\n"+
+                              "%TAG ! abc");
         assertEquals(expected, tokens);
     }
 
     public void testLiteralScalar() throws Exception {
         List expected = new ArrayList();
         expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
-        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("abc\nfoobar"), false, '|', new Position.Range(new Position(0,0,0), new Position(2,7,14))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(2,7,14))));
 
         List tokens = getScan("|\n"+
                               " abc\n"+
@@ -291,7 +318,8 @@ public class PositioningScannerImplTest extends YAMLTestCase {
     public void testFoldedScalar() throws Exception {
         List expected = new ArrayList();
         expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
-        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("abc foobar"), false, '>', new Position.Range(new Position(0,0,0), new Position(2,7,14))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(2,7,14))));
 
         List tokens = getScan(">\n"+
                               " abc\n"+

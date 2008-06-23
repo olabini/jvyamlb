@@ -48,6 +48,7 @@ import org.jvyamlb.tokens.PositionedFlowEntryToken;
 import org.jvyamlb.tokens.PositionedTagToken;
 import org.jvyamlb.tokens.PositionedAliasToken;
 import org.jvyamlb.tokens.PositionedAnchorToken;
+import org.jvyamlb.tokens.PositionedDirectiveToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -203,7 +204,7 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     }
 
     protected DirectiveToken getDirective(String name, String[] value) {
-        return new DirectiveToken(name, value);
+        return new PositionedDirectiveToken(name, value, new Position.Range(getStartPosition(), getPosition()));
     }
 
     protected ScalarToken getScalar(ByteList value, boolean plain, char style) {

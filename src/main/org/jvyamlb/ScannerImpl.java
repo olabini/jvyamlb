@@ -1486,6 +1486,7 @@ public class ScannerImpl implements Scanner {
     }
 
     private Token scanDirective() {
+        startingItem();
         forward();
         final String name = scanDirectiveName();
         String[] value = null;
@@ -1498,8 +1499,9 @@ public class ScannerImpl implements Scanner {
                 forward();
             }
         }
+        Token t = getDirective(name,value);
         scanDirectiveIgnoredLine();
-        return getDirective(name,value);
+        return t;
     }
 
     private String scanDirectiveName() {

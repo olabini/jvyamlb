@@ -28,6 +28,8 @@ import org.jvyamlb.tokens.PositionedAliasToken;
 import org.jvyamlb.tokens.PositionedAnchorToken;
 import org.jvyamlb.tokens.PositionedDirectiveToken;
 import org.jruby.util.ByteList;
+import org.jvyamlb.exceptions.ScannerException;
+import org.jvyamlb.exceptions.PositionedScannerException;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -133,8 +135,6 @@ public class PositioningScannerImplTest extends YAMLTestCase {
         assertEquals(expected, tokens);
     }
     
-    // TODO: add testing of nested block mappings
-
     public void testThatAOneItemSequenceWorks() throws Exception {
         List expected = new ArrayList();
         expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
@@ -335,5 +335,15 @@ public class PositioningScannerImplTest extends YAMLTestCase {
 
         List tokens = getScan("'abc'");
         assertEquals(expected, tokens);
+    }
+
+    public void testScannerExceptionIncludesPositioningInformation() throws Exception {
+        try {
+            getScan("!<abc");
+            assertTrue("scanning should throw an exception", false);
+        } catch(ScannerException e) {
+            assertTrue("Exception should be instance of PositioningScannerException", e instanceof PositionedScannerException);
+            assertEquals("Position should be correct for exception", new Position.Range(new Position(0,5,5)), ((PositionedScannerException)e).getRange());
+        }
     }
 }// PositioningScannerImplTest

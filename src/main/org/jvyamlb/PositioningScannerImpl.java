@@ -49,6 +49,7 @@ import org.jvyamlb.tokens.PositionedTagToken;
 import org.jvyamlb.tokens.PositionedAliasToken;
 import org.jvyamlb.tokens.PositionedAnchorToken;
 import org.jvyamlb.tokens.PositionedDirectiveToken;
+import org.jvyamlb.exceptions.PositionedScannerException;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -221,5 +222,9 @@ public class PositioningScannerImpl extends ScannerImpl implements PositioningSc
     protected SimpleKey getSimpleKey(final int tokenNumber, final boolean required, final int index, final int line, final int column) {
         final Position p = getPosition();
         return new SimpleKey(tokenNumber, required, p.offset, p.line, column);
+    }
+
+    protected void scannerException(String when, String what, String note) {
+        throw new PositionedScannerException(when, what, note, new Position.Range(getPosition()));
     }
 }// PositioningScannerImpl

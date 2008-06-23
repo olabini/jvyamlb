@@ -345,11 +345,19 @@ public class ScannerImpl implements Scanner {
         }
     }
 
+    protected void yamlException(String message) {
+        throw new YAMLException(message);
+    }
+
+    protected void scannerException(String when, String what, String note) {
+        throw new ScannerException(when, what, note);
+    }
+
     private void checkPrintable(final byte[] b, final int len) {
         for(int i=0;i<len;i++) {
             if(NON_PRINTABLE[((int)b[i] & 0xFF)]) {
                 final int position = this.buffer.length() - this.pointer + i;
-                throw new YAMLException("At " + position + " we found: " + (char)((int)b[i] & 0xFF) + ". Special characters are not allowed");
+                yamlException("At " + position + " we found: " + (char)((int)b[i] & 0xFF) + ". Special characters are not allowed");
             }
         }
     }
@@ -567,7 +575,8 @@ public class ScannerImpl implements Scanner {
             return fetchPlain();
         }
 
-        throw new ScannerException("while scanning for the next token","found character " + ch + "(" + (int)ch + ") that cannot start any token",null);
+        scannerException("while scanning for the next token","found character " + ch + "(" + (int)ch + ") that cannot start any token",null);
+        return null;
     }
 
     protected StreamStartToken getStreamStart() {
@@ -752,7 +761,7 @@ public class ScannerImpl implements Scanner {
         this.docStart = false;
         if(this.flowLevel == 0) {
             if(!this.allowSimpleKey) {
-                throw new ScannerException(null,"sequence entries are not allowed here",null);
+                scannerException(null,"sequence entries are not allowed here",null);
             }
             if(addIndent(this.column)) {
                 addToken(getBlockSequenceStart());
@@ -788,7 +797,7 @@ public class ScannerImpl implements Scanner {
         SimpleKey key = (SimpleKey)this.possibleSimpleKeys.remove(new Integer(this.flowLevel));
         if(key != null) {
             if(key.isRequired()) {
-                throw new ScannerException("while scanning a simple key","could not find expected ':'",null);
+                scannerException("while scanning a simple key","could not find expected ':'",null);
             }
         }
     }
@@ -813,7 +822,7 @@ public class ScannerImpl implements Scanner {
             forward(2);
             suffix = scanTagUri("tag");
             if(peek() != '>') {
-                throw new ScannerException("while scanning a tag","expected '>', but found "+ peek() + "(" + (int)peek() + ")",null);
+                scannerException("while scanning a tag","expected '>', but found "+ peek() + "(" + (int)peek() + ")",null);
             }
             forward();
         } else if(NULL_BL_T_LINEBR[ch]) {
@@ -840,7 +849,7 @@ public class ScannerImpl implements Scanner {
             suffix = scanTagUri("tag");
         }
         if(!NULL_BL_LINEBR[peek()]) {
-            throw new ScannerException("while scanning a tag","expected ' ', but found " + peek() + "(" + (int)peek() + ")",null);
+            scannerException("while scanning a tag","expected ' ', but found " + peek() + "(" + (int)peek() + ")",null);
         }
         return getTag(new ByteList[] {handle,suffix});
     }
@@ -866,7 +875,7 @@ public class ScannerImpl implements Scanner {
             forward(length);
         }
         if(chunks.length() == 0) {
-            throw new ScannerException("while scanning a " + name,"expected URI, but found " + ch + "(" + (int)ch + ")",null);
+            scannerException("while scanning a " + name,"expected URI, but found " + ch + "(" + (int)ch + ")",null);
         }
         return chunks;
     }
@@ -874,7 +883,7 @@ public class ScannerImpl implements Scanner {
     private ByteList scanTagHandle(final String name) {
         char ch =  peek();
         if(ch != '!') {
-            throw new ScannerException("while scanning a " + name,"expected '!', but found " + ch + "(" + (int)ch + ")",null);
+            scannerException("while scanning a " + name,"expected '!', but found " + ch + "(" + (int)ch + ")",null);
         }
         int length = 1;
         ch = peek(length);
@@ -885,7 +894,7 @@ public class ScannerImpl implements Scanner {
             }
             if('!' != ch) {
                 forward(length);
-                throw new ScannerException("while scanning a " + name,"expected '!', but found " + ch + "(" + ((int)ch) + ")",null);
+                scannerException("while scanning a " + name,"expected '!', but found " + ch + "(" + ((int)ch) + ")",null);
             }
             length++;
         }
@@ -903,7 +912,7 @@ public class ScannerImpl implements Scanner {
                 ensure(2,false);
                 bytes.append(Integer.parseInt(new String(ByteList.plain(this.buffer.bytes,this.pointer,2)),16));
             } catch(final NumberFormatException nfe) {
-                throw new ScannerException("while scanning a " + name,"expected URI escape sequence of 2 hexadecimal numbers, but found " + peek(1) + "(" + ((int)peek(1)) + ") and "+ peek(2) + "(" + ((int)peek(2)) + ")",null);
+                scannerException("while scanning a " + name,"expected URI escape sequence of 2 hexadecimal numbers, but found " + peek(1) + "(" + ((int)peek(1)) + ") and "+ peek(2) + "(" + ((int)peek(2)) + ")",null);
             }
             forward(2);
         }
@@ -1085,13 +1094,13 @@ public class ScannerImpl implements Scanner {
         for(int i=0;i<length;i+=2) {
             byte val = HEXA_VALUES[this.buffer.bytes[this.pointer+i] & 0xFF];
             if(val == -1) {
-                throw new ScannerException("while scanning a double-quoted scalar","expected escape sequence of " + length + " hexadecimal numbers, but found something else: " + (char)(this.buffer.bytes[this.pointer+i] & 0xFF),null);
+                scannerException("while scanning a double-quoted scalar","expected escape sequence of " + length + " hexadecimal numbers, but found something else: " + (char)(this.buffer.bytes[this.pointer+i] & 0xFF),null);
             }
             if(i+1 < length) {
                 val = (byte)(val << 4);
                 byte v2 = HEXA_VALUES[this.buffer.bytes[this.pointer+i+1] & 0xFF];
                 if(v2 == -1) {
-                    throw new ScannerException("while scanning a double-quoted scalar","expected escape sequence of " + length + " hexadecimal numbers, but found something else: " + (char)(this.buffer.bytes[this.pointer+i+1] & 0xFF),null);
+                    scannerException("while scanning a double-quoted scalar","expected escape sequence of " + length + " hexadecimal numbers, but found something else: " + (char)(this.buffer.bytes[this.pointer+i+1] & 0xFF),null);
                 }
                 val+=v2;
             }
@@ -1154,7 +1163,7 @@ public class ScannerImpl implements Scanner {
         forward(length);
         char ch = peek();
         if(ch == '\0') {
-            throw new ScannerException("while scanning a quoted scalar","found unexpected end of stream",null);
+            scannerException("while scanning a quoted scalar","found unexpected end of stream",null);
         } else if(FULL_LINEBR[ch]) {
             final byte[] lineBreak = scanLineBreak();
             final ByteList breaks = scanFlowScalarBreaks();
@@ -1175,7 +1184,7 @@ public class ScannerImpl implements Scanner {
         boolean colz=true;
         for(;;) {
             if(colz && isEndOrStart()) {
-                throw new ScannerException("while scanning a quoted scalar","found unexpected document separator",null);
+                scannerException("while scanning a quoted scalar","found unexpected document separator",null);
             }
             while(BLANK_T[peek()]) {
                 forward();
@@ -1198,7 +1207,7 @@ public class ScannerImpl implements Scanner {
         final SimpleKey key = (SimpleKey)this.possibleSimpleKeys.get(new Integer(this.flowLevel));
         if(null == key) {
             if(this.flowLevel == 0 && !this.allowSimpleKey) {
-                throw new ScannerException(null,"mapping values are not allowed here",null);
+                scannerException(null,"mapping values are not allowed here",null);
             }
             this.allowSimpleKey = this.flowLevel == 0;
             removePossibleSimpleKey();
@@ -1403,14 +1412,14 @@ public class ScannerImpl implements Scanner {
             if(DIGIT[ch]) {
                 increment = ch-'0';
                 if(increment == 0) {
-                    throw new ScannerException("while scanning a block scalar","expected indentation indicator in the range 1-9, but found 0",null);
+                    scannerException("while scanning a block scalar","expected indentation indicator in the range 1-9, but found 0",null);
                 }
                 forward();
             }
         } else if(DIGIT[ch]) {
             increment = ch-'0';
             if(increment == 0) {
-                throw new ScannerException("while scanning a block scalar","expected indentation indicator in the range 1-9, but found 0",null);
+                scannerException("while scanning a block scalar","expected indentation indicator in the range 1-9, but found 0",null);
             }
             forward();
             ch = peek();
@@ -1420,7 +1429,7 @@ public class ScannerImpl implements Scanner {
             }
         }
         if(!NULL_BL_LINEBR[peek()]) {
-            throw new ScannerException("while scanning a block scalar","expected chomping or indentation indicators, but found " + peek() + "(" + ((int)peek()) + ")",null);
+            scannerException("while scanning a block scalar","expected chomping or indentation indicators, but found " + peek() + "(" + ((int)peek()) + ")",null);
         }
         return new Object[] {chomping,new Integer(increment)};
     }
@@ -1455,7 +1464,7 @@ public class ScannerImpl implements Scanner {
     private Token fetchKey() {
         if(this.flowLevel == 0) {
             if(!this.allowSimpleKey) {
-                throw new ScannerException(null,"mapping keys are not allowed here",null);
+                scannerException(null,"mapping keys are not allowed here",null);
             }
             if(addIndent(this.column)) {
                 addToken(getBlockMappingStart());
@@ -1514,7 +1523,7 @@ public class ScannerImpl implements Scanner {
             ch = peek(length);
         }
         if(zlen) {
-            throw new ScannerException("while scanning a directive","expected alphabetic or numeric character, but found " + ch + "(" + ((int)ch) + ")",null);
+            scannerException("while scanning a directive","expected alphabetic or numeric character, but found " + ch + "(" + ((int)ch) + ")",null);
         }
         String value = null;
         try {
@@ -1524,7 +1533,7 @@ public class ScannerImpl implements Scanner {
         }
         forward(length);
         if(!NULL_BL_LINEBR[peek()]) {
-            throw new ScannerException("while scanning a directive","expected alphabetic or numeric character, but found " + ch + "(" + ((int)ch) + ")",null);
+            scannerException("while scanning a directive","expected alphabetic or numeric character, but found " + ch + "(" + ((int)ch) + ")",null);
         }
         return value;
     }
@@ -1540,7 +1549,7 @@ public class ScannerImpl implements Scanner {
         }
         final char ch = peek();
         if(!NULL_OR_LINEBR[ch]) {
-            throw new ScannerException("while scanning a directive","expected a comment or a line break, but found " + peek() + "(" + ((int)peek()) + ")",null);
+            scannerException("while scanning a directive","expected a comment or a line break, but found " + peek() + "(" + ((int)peek()) + ")",null);
         }
         return scanLineBreak();
     }
@@ -1554,7 +1563,7 @@ public class ScannerImpl implements Scanner {
             length++;
         }
         if(length == 0) {
-            throw new ScannerException("while scanning an " + name,"expected alphabetic or numeric character, but found something else...",null);
+            scannerException("while scanning an " + name,"expected alphabetic or numeric character, but found something else...",null);
         }
         String value = null;
         try {
@@ -1564,7 +1573,7 @@ public class ScannerImpl implements Scanner {
         }
         forward(length);
         if(!NON_ALPHA_OR_NUM[peek()]) {
-            throw new ScannerException("while scanning an " + name,"expected alphabetic or numeric character, but found "+ peek() + "(" + ((int)peek()) + ")",null);
+            scannerException("while scanning an " + name,"expected alphabetic or numeric character, but found "+ peek() + "(" + ((int)peek()) + ")",null);
 
         }
         tok.setValue(value);
@@ -1577,12 +1586,12 @@ public class ScannerImpl implements Scanner {
         }
         final String major = scanYamlDirectiveNumber();
         if(peek() != '.') {
-            throw new ScannerException("while scanning a directive","expected a digit or '.', but found " + peek() + "(" + ((int)peek()) + ")",null);
+            scannerException("while scanning a directive","expected a digit or '.', but found " + peek() + "(" + ((int)peek()) + ")",null);
         }
         forward();
         final String minor = scanYamlDirectiveNumber();
         if(!NULL_BL_LINEBR[peek()]) {
-            throw new ScannerException("while scanning a directive","expected a digit or ' ', but found " + peek() + "(" + ((int)peek()) + ")",null);
+            scannerException("while scanning a directive","expected a digit or ' ', but found " + peek() + "(" + ((int)peek()) + ")",null);
         }
         return new String[] {major,minor};
     }
@@ -1590,7 +1599,7 @@ public class ScannerImpl implements Scanner {
     private String scanYamlDirectiveNumber() {
         final char ch = peek();
         if(!Character.isDigit(ch)) {
-            throw new ScannerException("while scanning a directive","expected a digit, but found " + ch + "(" + ((int)ch) + ")",null);
+            scannerException("while scanning a directive","expected a digit, but found " + ch + "(" + ((int)ch) + ")",null);
         }
         int length = 0;
         StringBuffer sb = new StringBuffer();
@@ -1625,7 +1634,7 @@ public class ScannerImpl implements Scanner {
     private ByteList scanTagDirectiveHandle() {
         final ByteList value = scanTagHandle("directive");
         if(peek() != ' ') {
-            throw new ScannerException("while scanning a directive","expected ' ', but found " + peek() + "(" + ((int)peek()) + ")",null);
+            scannerException("while scanning a directive","expected ' ', but found " + peek() + "(" + ((int)peek()) + ")",null);
         }
         return value;
     }
@@ -1633,7 +1642,7 @@ public class ScannerImpl implements Scanner {
     private ByteList scanTagDirectivePrefix() {
         final ByteList value = scanTagUri("directive");
         if(!NULL_BL_LINEBR[peek()]) {
-            throw new ScannerException("while scanning a directive","expected ' ', but found " + peek() + "(" + ((int)peek()) + ")",null);
+            scannerException("while scanning a directive","expected ' ', but found " + peek() + "(" + ((int)peek()) + ")",null);
         }
         return value;
     }

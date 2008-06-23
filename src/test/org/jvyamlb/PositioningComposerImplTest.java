@@ -15,6 +15,8 @@ import org.jvyamlb.nodes.PositionedMappingNode;
 import org.jvyamlb.nodes.PositionedSequenceNode;
 import java.util.HashMap;
 import java.util.Map;
+import org.jvyamlb.exceptions.ComposerException;
+import org.jvyamlb.exceptions.PositionedComposerException;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -60,5 +62,15 @@ public class PositioningComposerImplTest extends YAMLTestCase {
         Node expected = new PositionedSequenceNode("tag:yaml.org,2002:seq", value, false, new Position.Range(new Position(0,0,0), new Position(0,3,3)));
         Node node = getDocument("- a");
         assertEquals(expected, node);
+    }
+
+    public void testComposerExceptionIncludesPositioningInformation() throws Exception {
+        try {
+            getDocument(" *foobar");
+            assertTrue("composing should throw an exception", false);
+        } catch(ComposerException e) {
+            assertTrue("Exception should be instance of PositionedComposerException", e instanceof PositionedComposerException);
+            assertEquals("Position should be correct for exception", new Position.Range(new Position(0,1,1),new Position(0,8,8)), ((PositionedComposerException)e).getRange());
+        }
     }
 }

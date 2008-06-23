@@ -7,6 +7,7 @@ import org.jvyamlb.nodes.PositionedScalarNode;
 import org.jvyamlb.nodes.PositionedMappingNode;
 import org.jvyamlb.nodes.PositionedSequenceNode;
 import org.jvyamlb.nodes.Node;
+import org.jvyamlb.exceptions.PositionedComposerException;
 import org.jruby.util.ByteList;
 import org.jvyamlb.events.Event;
 import java.util.Map;
@@ -46,5 +47,9 @@ public class PositioningComposerImpl extends ComposerImpl implements Positioning
 
     protected void finalizeSequence(final Node node, final Event e) {
         ((PositionedSequenceNode)node).setRange(((Positionable)node).getRange().withEnd(((Positionable)e).getRange().end));
+    }
+
+    protected void composerException(final String when, final String what, final String note, final Event e) {
+        throw new PositionedComposerException(when, what, note, ((Positionable)e).getRange());
     }
 }

@@ -103,12 +103,16 @@ public class ComposerImpl implements Composer {
     protected void finalizeSequence(final Node node, final Event e) {
     }
 
+    protected void composerException(final String when, final String what, final String note, final Event e) {
+        throw new ComposerException(when, what, note);
+    }
+
     public Node composeNode(final Node parent, final Object index) {
         if(parser.peekEvent() instanceof AliasEvent) {
             final AliasEvent event = (AliasEvent)parser.getEvent();
             final String anchor = event.getAnchor();
             if(!anchors.containsKey(anchor)) {
-                throw new ComposerException(null,"found undefined alias " + anchor,null);
+                composerException(null,"found undefined alias " + anchor,null,event);
             }
             return (Node)anchors.get(anchor);
         }

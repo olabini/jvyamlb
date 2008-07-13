@@ -231,6 +231,13 @@ public class ParserImpl implements Parser {
             return new AliasEvent(value);
         }
 
+        protected void setEmptyToken(Token t) {
+        }
+
+        protected Token getEmptyToken(Scanner scanner) {
+            return scanner.peekToken();
+        }
+
         protected void parserException(final String when, final String what, final String note, final Token t) {
             throw new ParserException(when, what, note);
         }
@@ -476,7 +483,7 @@ public class ParserImpl implements Parser {
             case P_BLOCK_MAPPING_ENTRY_VALUE: {
                 if(scanner.peekToken() instanceof KeyToken || scanner.peekToken() instanceof ValueToken) {
                     if(scanner.peekToken() instanceof ValueToken) {
-                        scanner.getToken();
+                        final Token value = scanner.getToken();
                         final Token curr = scanner.peekToken();
                         if(!(curr instanceof KeyToken || curr instanceof ValueToken || curr instanceof BlockEndToken)) {
                             if(curr instanceof ScalarToken && scanner.peekToken(1) instanceof BlockEntryToken) {
@@ -485,6 +492,7 @@ public class ParserImpl implements Parser {
                             }
                             parseStack.push(P_BLOCK_NODE_OR_INDENTLESS_SEQUENCE);
                         } else {
+                            setEmptyToken(value);
                             parseStack.push(P_EMPTY_SCALAR);
                         }
                     } else {
@@ -677,7 +685,7 @@ public class ParserImpl implements Parser {
                 return getAlias(tok.getValue(), tok);
             }
             case P_EMPTY_SCALAR: {
-                return getScalar(null,null,new boolean[]{true,false},new ByteList(ByteList.NULL_ARRAY),(char)0, scanner.peekToken(), null, null);
+                return getScalar(null,null,new boolean[]{true,false},new ByteList(ByteList.NULL_ARRAY),(char)0, getEmptyToken(scanner), null, null);
             }
             }
 

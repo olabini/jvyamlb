@@ -400,4 +400,21 @@ public class PositioningParserImplTest extends YAMLTestCase {
             assertEquals("Position should be correct for exception", new Position.Range(new Position(0,8,8),new Position(0,11,11)), ((PositionedParserException)e).getRange());
         }
     }
+
+    public void testCommentBeforeSecondKeyWithBlankFirst() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartEvent(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedDocumentStartEvent(false, new int[]{1,1}, null, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedMappingStartEvent(null, null, true, false, new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("a"), (char)0, new Position.Range(new Position(0,0,0), new Position(0,1,1))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s(""), (char)0, new Position.Range(new Position(0,2,2), new Position(0,2,2))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("c"), (char)0, new Position.Range(new Position(2,0,9), new Position(2,1,10))));
+        expected.add(new PositionedScalarEvent(null, null, new boolean[]{true,false}, s("d"), (char)0, new Position.Range(new Position(2,3,12), new Position(2,4,13))));
+        expected.add(new PositionedMappingEndEvent(new Position.Range(new Position(2,4,13))));
+        expected.add(new PositionedDocumentEndEvent(false, new Position.Range(new Position(2,4,13))));
+        expected.add(new PositionedStreamEndEvent(new Position.Range(new Position(2,4,13))));
+
+        List events = getParse("a: \n#foo\nc: d");
+        assertEquals(expected, events);
+    }
 }

@@ -3,6 +3,7 @@
  */
 package org.jvyamlb;
 
+import org.jvyamlb.events.Event;
 import org.jvyamlb.events.PositionedStreamEndEvent;
 import org.jvyamlb.events.PositionedStreamStartEvent;
 import org.jvyamlb.tokens.Token;
@@ -28,6 +29,9 @@ import org.jvyamlb.events.PositionedSequenceEndEvent;
 import org.jvyamlb.events.PositionedAliasEvent;
 import org.jvyamlb.events.AliasEvent;
 import org.jvyamlb.exceptions.PositionedParserException;
+import org.jvyamlb.util.IntStack;
+import org.jvyamlb.tokens.FlowSequenceEndToken;
+import org.jvyamlb.tokens.FlowMappingEndToken;
 
 /**
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -82,7 +86,12 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
         }
 
         protected MappingEndEvent getMappingEnd(final Token t) {
-            return new PositionedMappingEndEvent(new Position.Range(((Positionable)t).getPosition()));
+            Positionable p = (Positionable)this.last;
+            if(p == null || t instanceof FlowMappingEndToken) {
+                p = (Positionable)t;
+            }
+
+            return new PositionedMappingEndEvent(new Position.Range(p.getRange().end));
         }
 
         protected SequenceStartEvent getSequenceStart(final String anchor, final String tag, final boolean implicit, final boolean flowStyle, final Token t, final Token anchorT, final Token tagT) {
@@ -97,7 +106,12 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
         }
 
         protected SequenceEndEvent getSequenceEnd(final Token t) {
-            return new PositionedSequenceEndEvent(new Position.Range(((Positionable)t).getPosition()));
+            Positionable p = (Positionable)this.last;
+            if(p == null || t instanceof FlowSequenceEndToken) {
+                p = (Positionable)t;
+            }
+
+            return new PositionedSequenceEndEvent(new Position.Range(p.getRange().end));
         }
 
         protected AliasEvent getAlias(final String value, final Token t) {
@@ -121,6 +135,17 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
                 return ret;
             }
             return scanner.peekToken();
+        }
+
+        private Event last;
+
+        public Event produce(final int current, final IntStack parseStack, final Scanner scanner) {
+            Event ev = super.produce(current, parseStack, scanner);
+            if(ev != null) {
+                last = ev;
+            }
+
+            return ev;
         }
     }
     

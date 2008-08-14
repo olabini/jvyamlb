@@ -653,7 +653,7 @@ public class EmitterImpl implements Emitter {
                 }
             }
 
-            return (length < 128 && (event instanceof AliasEvent || (event instanceof ScalarEvent && !analysis.multiline) || checkEmptySequence() || checkEmptyMapping()));
+            return (length < 128 && (event instanceof AliasEvent || (event instanceof ScalarEvent && !analysis.multiline)));
         }
         
         private void processAnchor(final ByteList indicator) throws IOException {

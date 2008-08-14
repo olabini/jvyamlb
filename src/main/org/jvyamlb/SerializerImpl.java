@@ -172,7 +172,11 @@ public class SerializerImpl implements Serializer {
                     implicit[0] = node.getTag().equals(detectedTag);
                     implicit[1] = node.getTag().equals(defaultTag);
                 }
-                this.emitter.emit(new ScalarEvent(tAlias,node.getTag(),implicit,(ByteList)node.getValue(),((ScalarNode)node).getStyle()));
+                char style = ((ScalarNode)node).getStyle();
+                if(!implicit[0] && implicit[1] && node.getTag().equals(YAML.DEFAULT_SCALAR_TAG)) {
+                    style = '"';
+                }
+                this.emitter.emit(new ScalarEvent(tAlias,node.getTag(),implicit,(ByteList)node.getValue(),style));
             } else if(node instanceof SequenceNode) {
                 final boolean implicit = !options.explicitTypes() && (node.getTag().equals(this.resolver.resolve(SequenceNode.class,null,new boolean[]{true,true})));
                 this.emitter.emit(new SequenceStartEvent(tAlias,node.getTag(),implicit,((CollectionNode)node).getFlowStyle()));

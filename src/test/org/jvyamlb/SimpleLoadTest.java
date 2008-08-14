@@ -183,6 +183,4 @@ public class SimpleLoadTest extends YAMLTestCase {
         assertLoad(null, "--- \n");
         assertLoad(s("---"), "---");
     }
-
-
 }// SimpleLoadTest

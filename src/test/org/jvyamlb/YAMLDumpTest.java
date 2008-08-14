@@ -45,6 +45,14 @@ public class YAMLDumpTest extends YAMLTestCase {
         assertEquals(ByteList.create("--- !!str 1.0\n"), YAML.dump(ByteList.create("1.0")));
     }
 
+    public void testEmptyList() {
+        assertEquals(ByteList.create("--- []\n\n"), YAML.dump(new ArrayList()));
+    }
+
+    public void testEmptyMap() {
+        assertEquals(ByteList.create("--- {}\n\n"), YAML.dump(new HashMap()));
+    }
+
     public void testDumpJavaBean() {
         final TestBean2 toDump = new TestBean2(ByteList.create("Ola Bini"), 24);
         Object v = YAML.dump(toDump);

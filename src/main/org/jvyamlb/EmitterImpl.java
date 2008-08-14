@@ -395,6 +395,8 @@ public class EmitterImpl implements Emitter {
                 indent = ((Integer)indents.remove(0)).intValue();
                 flowLevel--;
                 emitter.writeIndicator(ByteList.create("]"),false,false,false);
+                emitter.writeLineBreak(null);
+                emitter.writeLineBreak(null);
                 state = ((Integer)states.remove(0)).intValue();
             } else {
                 if(canonical || column > bestWidth) {
@@ -414,6 +416,8 @@ public class EmitterImpl implements Emitter {
                     emitter.writeIndent();
                 }
                 emitter.writeIndicator(ByteList.create("]"),false,false,false);
+                emitter.writeLineBreak(null);
+                emitter.writeLineBreak(null);
                 state = ((Integer)states.remove(0)).intValue();
             } else {
                 emitter.writeIndicator(ByteList.create(","),false,false,false);
@@ -430,6 +434,8 @@ public class EmitterImpl implements Emitter {
                 indent = ((Integer)indents.remove(0)).intValue();
                 flowLevel--;
                 emitter.writeIndicator(ByteList.create("}"),false,false,false);
+                emitter.writeLineBreak(null);
+                emitter.writeLineBreak(null);
                 state = ((Integer)states.remove(0)).intValue();
             } else {
                 if(canonical || column > bestWidth) {
@@ -470,6 +476,8 @@ public class EmitterImpl implements Emitter {
                     emitter.writeIndent();
                 }
                 emitter.writeIndicator(ByteList.create("}"),false,false,false);
+                emitter.writeLineBreak(null);
+                emitter.writeLineBreak(null);
                 state = ((Integer)states.remove(0)).intValue();
             } else {
                 emitter.writeIndicator(ByteList.create(","),false,false,false);

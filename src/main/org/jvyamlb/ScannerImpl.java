@@ -247,7 +247,6 @@ public class ScannerImpl implements Scanner {
         STUPID_CHAR['{'] = false;
         STUPID_CHAR['#'] = false;
         STUPID_CHAR['!'] = false;
-        STUPID_CHAR['|'] = false;
         STUPID_CHAR['\''] = false;
         STUPID_CHAR['"'] = false;
         STUPID_CHAR['@'] = false;
@@ -496,9 +495,6 @@ public class ScannerImpl implements Scanner {
             (this.buffer.bytes[this.pointer+1] & 0xFF) == '-' &&
             (this.buffer.bytes[this.pointer+2] & 0xFF) == '-' &&
             (this.buffer.bytes[this.pointer+3] != 0) &&
-            !(this.buffer.realSize<=(this.pointer+4) || 
-              ((this.buffer.bytes[this.pointer+3] == '\n') && 
-               (this.buffer.bytes[this.pointer+4] == 0))) &&
             (NULL_BL_T_LINEBR[this.buffer.bytes[this.pointer+3]]);
     }
 

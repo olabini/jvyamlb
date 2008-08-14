@@ -90,6 +90,15 @@ public class YAMLLoadTest extends YAMLTestCase {
         assertLoad(expected, "--- !java/object:org.jvyamlb.TestBean\nname: Ola Bini\nage: 24\nborn: 1982-05-03\n");
     }
 
+    // JRUBY-2754
+    public void testJavaBeanLoadRefs() throws Exception {
+        org.joda.time.DateTime dt = new org.joda.time.DateTime(1982,5,3,0,0,0,0);
+        final TestBean bean = new TestBean(s("Ola Bini"), 24, dt);
+        List result = (List)YAML.load(s("--- \n- &id001 !java/object:org.jvyamlb.TestBean\n  name: Ola Bini\n  age: 24\n  born: 1982-05-03\n- *id001"));
+        assertEquals(bean, result.get(0));
+        assertSame(result.get(0), result.get(1));
+    }
+
     public void testFlowSequenceWithFlowMappingLoad() throws Exception {
         List expectedOuter = new ArrayList();
         Map expectedInner = new HashMap();

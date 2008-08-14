@@ -60,9 +60,10 @@ public class YAMLDumpTest extends YAMLTestCase {
     public void testDumpJavaBean() {
         final TestBean2 toDump = new TestBean2(ByteList.create("Ola Bini"), 24);
         Object v = YAML.dump(toDump);
+        String s = v.toString();
         assertTrue("something is wrong with: \"" + v + "\"",
-ByteList.create("--- !java/object:org.jvyamlb.TestBean2\nname: Ola Bini\nage: 24\n").equals(v) ||
-ByteList.create("--- !java/object:org.jvyamlb.TestBean2\nage: 24\nname: Ola Bini\n").equals(v)
+ByteList.create("--- !java/object:org.jvyamlb.TestBean2 \nname: Ola Bini\nage: 24\n").equals(v) ||
+ByteList.create("--- !java/object:org.jvyamlb.TestBean2 \nage: 24\nname: Ola Bini\n").equals(v)
                    );
     }
 }// YAMLDumpTest

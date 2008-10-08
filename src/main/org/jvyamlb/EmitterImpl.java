@@ -1206,9 +1206,17 @@ public class EmitterImpl implements Emitter {
         }
         if(handle == null) {
             if(tag.startsWith("tag:") && tag.indexOf(':', 4) != -1) {
-                int doti = tag.indexOf('.',4);
-                String first = tag.substring(4,doti);
-                String rest = tag.substring(tag.indexOf(':', 4)+1);
+                final String first;
+                
+            	String taggingEntity = tag.substring(4, tag.indexOf(':', 4));
+                
+            	if (taggingEntity.endsWith("yaml.org,2002")) {
+                    first = taggingEntity.substring(0, taggingEntity.indexOf("yaml.org,2002") - 1);
+            	} else {
+                    first = taggingEntity;
+            	}
+
+            	String rest = tag.substring(tag.indexOf(':', 4)+1);
                 handle = "!" + first + "/";
                 suffix = rest;
             }

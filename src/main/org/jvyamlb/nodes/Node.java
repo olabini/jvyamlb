@@ -10,10 +10,19 @@ public abstract class Node {
     private String tag;
     private Object value;
     private int hash = -1;
+    private Object constructed;
 
     public Node(final String tag, final Object value) {
         this.tag = tag;
         this.value = value;
+    }
+
+    public Object getConstructed() {
+        return constructed;
+    }
+
+    public void setConstructed(Object constructed) {
+        this.constructed = constructed;
     }
 
     public String getTag() {

@@ -120,6 +120,9 @@ public class BaseConstructorImpl implements Constructor {
         if(node == null) {
             node = getNullNode();
         }
+        if(node.getConstructed() != null) {
+            return node.getConstructed();
+        }
         if(recursiveObjects.containsKey(node)) {
             LinkNode n = new LinkNode();
             n.setValue(node);
@@ -153,6 +156,7 @@ public class BaseConstructorImpl implements Constructor {
             }
         }
         final Object data = ctor.call(this,node);
+        node.setConstructed(data);
         doRecursionFix(node,data);
         return data;
     }

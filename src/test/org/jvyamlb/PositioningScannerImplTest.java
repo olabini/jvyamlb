@@ -346,4 +346,66 @@ public class PositioningScannerImplTest extends YAMLTestCase {
             assertEquals("Position should be correct for exception", new Position.Range(new Position(0,5,5)), ((PositionedScannerException)e).getRange());
         }
     }
+
+    public void testSimpleObjectWithCommentBefore() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("abc"), true, (char)0, new Position.Range(new Position(1,0,9), new Position(1,3,12))));
+        expected.add(new PositionedStreamEndToken(new Position.Range(new Position(1,3,12))));
+
+        List tokens = getScan("#comment\nabc");
+        assertEquals(expected, tokens);
+    }
+
+    public void testCommentBeforeFirstKey() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockMappingStartToken(             new Position.Range(new Position(1,0,5))));
+        expected.add(new PositionedKeyToken(                           new Position.Range(new Position(1,0,5))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0,  new Position.Range(new Position(1,0,5), new Position(1,1,6))));
+        expected.add(new PositionedValueToken(                         new Position.Range(new Position(1,2,7))));
+        expected.add(new PositionedScalarToken(s("b"), true, (char)0,  new Position.Range(new Position(1,3,8), new Position(1,4,9))));
+        expected.add(new PositionedBlockEndToken(                      new Position.Range(new Position(1,4,9))));
+        expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(1,4,9))));
+
+        List tokens = getScan("#foo\na: b");
+        assertEquals(expected, tokens);
+    }
+
+    public void testCommentBeforeSecondKey() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockMappingStartToken(             new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedKeyToken(                           new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0,  new Position.Range(new Position(0,0,0), new Position(0,1,1))));
+        expected.add(new PositionedValueToken(                         new Position.Range(new Position(0,2,2))));
+        expected.add(new PositionedScalarToken(s("b"), true, (char)0,  new Position.Range(new Position(0,3,3), new Position(0,4,4))));
+        expected.add(new PositionedKeyToken(                           new Position.Range(new Position(2,0,10))));
+        expected.add(new PositionedScalarToken(s("c"), true, (char)0,  new Position.Range(new Position(2,0,10), new Position(2,1,11))));
+        expected.add(new PositionedValueToken(                         new Position.Range(new Position(2,2,12))));
+        expected.add(new PositionedScalarToken(s("d"), true, (char)0,  new Position.Range(new Position(2,3,13), new Position(2,4,14))));
+        expected.add(new PositionedBlockEndToken(                      new Position.Range(new Position(2,4,14))));
+        expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(2,4,14))));
+
+        List tokens = getScan("a: b\n#foo\nc: d");
+        assertEquals(expected, tokens);
+    }
+
+    public void testCommentBeforeSecondKeyWithBlankFirst() throws Exception {
+        List expected = new ArrayList();
+        expected.add(new PositionedStreamStartToken(                   new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedBlockMappingStartToken(             new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedKeyToken(                           new Position.Range(new Position(0,0,0))));
+        expected.add(new PositionedScalarToken(s("a"), true, (char)0,  new Position.Range(new Position(0,0,0), new Position(0,1,1))));
+        expected.add(new PositionedValueToken(                         new Position.Range(new Position(0,2,2))));
+        expected.add(new PositionedKeyToken(                           new Position.Range(new Position(2,0,9))));
+        expected.add(new PositionedScalarToken(s("c"), true, (char)0,  new Position.Range(new Position(2,0,9), new Position(2,1,10))));
+        expected.add(new PositionedValueToken(                         new Position.Range(new Position(2,2,11))));
+        expected.add(new PositionedScalarToken(s("d"), true, (char)0,  new Position.Range(new Position(2,3,12), new Position(2,4,13))));
+        expected.add(new PositionedBlockEndToken(                      new Position.Range(new Position(2,4,13))));
+        expected.add(new PositionedStreamEndToken(                     new Position.Range(new Position(2,4,13))));
+
+        List tokens = getScan("a: \n#foo\nc: d");
+        assertEquals(expected, tokens);
+    }
 }// PositioningScannerImplTest

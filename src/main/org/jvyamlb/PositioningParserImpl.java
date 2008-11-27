@@ -107,6 +107,21 @@ public class PositioningParserImpl extends ParserImpl implements PositioningPars
         protected void parserException(final String when, final String what, final String note, final Token t) {
             throw new PositionedParserException(when, what, note, ((Positionable)t).getRange());
         }
+
+        private Token emptyToken = null;
+        
+        protected void setEmptyToken(Token t) {
+            this.emptyToken = t;
+        }
+
+        protected Token getEmptyToken(Scanner scanner) {
+            if(emptyToken != null) {
+                Token ret = emptyToken;
+                emptyToken = null;
+                return ret;
+            }
+            return scanner.peekToken();
+        }
     }
     
     public PositioningParserImpl(final PositioningScanner scanner) {

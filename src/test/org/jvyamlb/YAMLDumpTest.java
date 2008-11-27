@@ -42,7 +42,11 @@ public class YAMLDumpTest extends YAMLTestCase {
     }
 
     public void testMoreScalars() {
-        assertEquals(ByteList.create("--- !!str 1.0\n"), YAML.dump(ByteList.create("1.0")));
+        assertEquals(ByteList.create("--- \"1.0\"\n"), YAML.dump(ByteList.create("1.0")));
+    }
+
+    public void testPrefersQuotesToExplicitTag() {
+        assertEquals(ByteList.create("--- \"30\"\n"), YAML.dump(ByteList.create("30")));
     }
 
     public void testEmptyList() {

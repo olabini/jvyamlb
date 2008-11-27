@@ -127,6 +127,12 @@ public class SimpleLoadTest extends YAMLTestCase {
         assertLoad(expected, "foobar: |= 567");
     }
 
+    public void testAtSign() throws Exception {
+        Map expected = new HashMap();
+        expected.put(s("foo"), s("@bar"));
+        assertLoad(expected, "foo: @bar");
+    }
+
     public void testSymbols() throws Exception {
         assertLoad(s(":a"), "--- \n:a"); 
         List expected = new ArrayList();

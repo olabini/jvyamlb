@@ -32,4 +32,8 @@ class SimpleKey {
     public int getColumn() {
         return this.column;
     }
+
+    public Position getPosition() {
+        return new Position(line, column, index);
+    }
 }// SimpleKey

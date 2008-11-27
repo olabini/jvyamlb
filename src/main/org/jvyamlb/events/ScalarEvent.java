@@ -22,8 +22,8 @@ public class ScalarEvent extends NodeEvent {
         this.style = style;
     }
 
-    public String getTag() {
-        return this.tag;
+   public String getTag() {
+       return this.tag;
     }
 
     public char getStyle() {

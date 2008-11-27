@@ -36,7 +36,7 @@ import org.jruby.util.ByteList;
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
  */
 public class ComposerImpl implements Composer {
-    private Parser parser;
+    protected Parser parser;
     private Resolver resolver;
     private Map anchors;
 
@@ -85,12 +85,34 @@ public class ComposerImpl implements Composer {
     private final static boolean[] FALS = new boolean[]{false};
     private final static boolean[] TRU = new boolean[]{true};
 
+    protected Node getScalar(final String tag, final ByteList value, final char style, final Event e) {
+        return new ScalarNode(tag,value,style);
+    }
+
+    protected Node createMapping(final String tag, final Map value, final boolean flowStyle, final Event e) {
+        return new MappingNode(tag,value,flowStyle);
+    }
+
+    protected void finalizeMapping(final Node node, final Event e) {
+    }
+
+    protected Node createSequence(final String tag, final List value, final boolean flowStyle, final Event e) {
+        return new SequenceNode(tag,value,flowStyle);
+    }
+
+    protected void finalizeSequence(final Node node, final Event e) {
+    }
+
+    protected void composerException(final String when, final String what, final String note, final Event e) {
+        throw new ComposerException(when, what, note);
+    }
+
     public Node composeNode(final Node parent, final Object index) {
         if(parser.peekEvent() instanceof AliasEvent) {
             final AliasEvent event = (AliasEvent)parser.getEvent();
             final String anchor = event.getAnchor();
             if(!anchors.containsKey(anchor)) {
-                throw new ComposerException(null,"found undefined alias " + anchor,null);
+                composerException(null,"found undefined alias " + anchor,null,event);
             }
             return (Node)anchors.get(anchor);
         }
@@ -107,7 +129,7 @@ public class ComposerImpl implements Composer {
             if(tag == null || tag.equals("!")) {
                 tag = resolver.resolve(ScalarNode.class,ev.getValue(),ev.getImplicit());
             }
-            node = new ScalarNode(tag,ev.getValue(),ev.getStyle());
+            node = getScalar(tag,ev.getValue(),ev.getStyle(),ev);
             if(null != anchor) {
                 anchors.put(anchor,node);
             }
@@ -117,7 +139,7 @@ public class ComposerImpl implements Composer {
             if(tag == null || tag.equals("!")) {
                 tag = resolver.resolve(SequenceNode.class,null,start.getImplicit()  ? TRU : FALS);
             }
-            node = new SequenceNode(tag,new ArrayList(),start.getFlowStyle());
+            node = createSequence(tag,new ArrayList(),start.getFlowStyle(),start);
             if(null != anchor) {
                 anchors.put(anchor,node);
             }
@@ -125,14 +147,14 @@ public class ComposerImpl implements Composer {
             while(!(parser.peekEvent() instanceof SequenceEndEvent)) {
                 ((List)node.getValue()).add(composeNode(node,new Integer(ix++)));
             }
-            parser.getEvent();
+            finalizeSequence(node, parser.getEvent());
         } else if(event instanceof MappingStartEvent) {
             final MappingStartEvent start = (MappingStartEvent)parser.getEvent();
             String tag = start.getTag();
             if(tag == null || tag.equals("!")) {
                 tag = resolver.resolve(MappingNode.class,null, start.getImplicit() ? TRU : FALS);
             }
-            node = new MappingNode(tag, new HashMap(), start.getFlowStyle());
+            node = createMapping(tag, new HashMap(), start.getFlowStyle(), start);
             if(null != anchor) {
                 anchors.put(anchor,node);
             }
@@ -145,7 +167,7 @@ public class ComposerImpl implements Composer {
                     ((Map)node.getValue()).put(itemKey,composeNode(node,itemKey));
                 }
             }
-            parser.getEvent();
+            finalizeMapping(node, parser.getEvent());
         }
         resolver.ascendResolver();
         return node;

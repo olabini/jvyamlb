@@ -14,6 +14,8 @@ import org.joda.time.DateTime;
 
 import org.jvyamlb.exceptions.ScannerException;
 
+import junit.framework.AssertionFailedError;
+
 /**
  *
  * @author <a href="mailto:ola.bini@gmail.com">Ola Bini</a>
@@ -119,6 +121,10 @@ public class SimpleLoadTest extends YAMLTestCase {
         expected = new HashMap();
         expected.put(s("foo"), s("bar"));
         assertLoad(expected, "---\nfoo: \tbar");
+
+        expected = new HashMap();
+        expected.put(s("foobar"), s("|= 567"));
+        assertLoad(expected, "foobar: |= 567");
     }
 
     public void testSymbols() throws Exception {
@@ -161,4 +167,22 @@ public class SimpleLoadTest extends YAMLTestCase {
             assertTrue(true);
         }
     }
+
+    public void testSimpleFailure() throws Exception {
+        try {
+            assertLoad(null, "--- -\nh");
+        } catch(AssertionFailedError e) {
+            assertTrue("should fail on faulty YAML: " + e, false);
+        } catch(ScannerException e) {
+            assertTrue(true);
+        }
+    }
+
+    public void testEmptyDocument() throws Exception {
+        assertLoad(null, "---\n");
+        assertLoad(null, "--- \n");
+        assertLoad(s("---"), "---");
+    }
+
+
 }// SimpleLoadTest

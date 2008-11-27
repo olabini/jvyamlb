@@ -708,6 +708,7 @@ public class EmitterImpl implements Emitter {
             }
             if(preparedTag != null && !"".equals(preparedTag)) {
                 emitter.writeIndicator(ByteList.create(preparedTag),true,false,true);
+                emitter.writeSpace();
             }
             preparedTag = null;
         }
@@ -1126,6 +1127,14 @@ public class EmitterImpl implements Emitter {
         env.line++;
         env.column = 0;
         stream.write(xdata.bytes,0,xdata.realSize);
+    }
+    
+    private final static ByteList SPACE = new ByteList(new byte[]{' '}, false);
+
+    void writeSpace() throws IOException {
+        env.whitespace = true;
+        env.column += 1;
+        stream.write(SPACE.bytes,0,SPACE.realSize);
     }
 
     void flushStream() throws IOException {

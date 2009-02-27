@@ -1,0 +1,2 @@
+Implementation-Title: JvYAMLb is a YAML processing library for Java, used by JRuby
+Implementation-Version: 0.2.5

@@ -169,8 +169,8 @@ public class SerializerImpl implements Serializer {
                 final String defaultTag = this.resolver.resolve(ScalarNode.class,(ByteList)node.getValue(),new boolean[]{false,true});
                 final boolean[] implicit = new boolean[] {false,false};
                 if(!options.explicitTypes()) {
-                    implicit[0] = node.getTag().equals(detectedTag);
-                    implicit[1] = node.getTag().equals(defaultTag);
+                    implicit[0] = node.getTag().equals(detectedTag) || node.getTag().startsWith(detectedTag+":");
+                    implicit[1] = node.getTag().equals(defaultTag) || node.getTag().startsWith(defaultTag+":");
                 }
                 char style = ((ScalarNode)node).getStyle();
                 if(!implicit[0] && implicit[1] && node.getTag().equals(YAML.DEFAULT_SCALAR_TAG)) {

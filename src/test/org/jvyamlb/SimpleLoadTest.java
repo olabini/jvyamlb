@@ -189,4 +189,9 @@ public class SimpleLoadTest extends YAMLTestCase {
         assertLoad(null, "--- \n");
         assertLoad(s("---"), "---");
     }
+
+    public void testBase64UnevenBinary() throws Exception {
+        assertLoad10(s("<131>Mar 26 01:42:54 ControlTowerServer[68251\u0000\u0000").bytes(), "--- !binary 'PDEzMT5NYXIgMjYgMDE6NDI6NTQgQ29udHJvbFRvd2VyU2VydmVyWzY4MjUxAAA='\n");
+        assertLoad10(s("<131>Mar 26 01:42:54 ControlTowerServer[68251\u0000\u0000").bytes(), "--- !binary 'PDEzMT5NYXIgMjYgMDE6NDI6NTQgQ29udHJvbFRvd2VyU2VydmVyWzY4MjUx\n  AAA=\n  '\n");
+    }
 }// SimpleLoadTest

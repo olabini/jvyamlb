@@ -36,6 +36,14 @@ public abstract class YAMLTestCase extends TestCase {
         assertEquals(expected,YAML.load(s(str),YAML.config().version("1.0")));
     }
 
+    public void assertLoad10(byte[] expected, String str) throws Exception {
+        assertArrayEquals(expected,(byte[])YAML.load(s(str),YAML.config().version("1.0")));
+    }
+
+    private void assertArrayEquals(byte[] expected, byte[] given) {
+        assertTrue(java.util.Arrays.equals(expected, given));
+    }
+
     public void assertRoundtrip(String value) throws Exception {
         assertEquals(s(value),YAML.load(YAML.dump(s(value))));
     }

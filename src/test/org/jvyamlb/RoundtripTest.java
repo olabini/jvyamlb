@@ -24,6 +24,9 @@ public class RoundtripTest extends YAMLTestCase {
         assertRoundtrip("ks]qkYM\2073Un\317\nL\346Yp\204 CKMfFcRDFZ\u000BMNk\302fQDR<R\u000B \314QUa\234P\237s aLJnAu \345\262Wqm_W\241\277J\256ILKpPNsMPuok");
     }
 
+    public void testChineseStringDump() throws Exception {
+        assertRoundtrip("中文");
+    }
 
     public void testFuzzyStringRoundtrip() throws Exception {
         int[] values = new int[255];

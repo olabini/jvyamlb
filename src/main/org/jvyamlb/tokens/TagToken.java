@@ -17,4 +17,8 @@ public class TagToken extends Token {
     public ByteList[] getValue() {
         return this.value;
     }
+
+    public String toString() {
+        return "" + value[0] + value[1];
+    }
 }// TagToken

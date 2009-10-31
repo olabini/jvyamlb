@@ -5,7 +5,7 @@
   <groupId>org.jruby.extras</groupId>
   <artifactId>jvyamlb</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.5</version>
+  <version>0.2.6</version>
   <name>jvyamlb</name>
   <description>
    JvYAMLb is a YAML processing library for Java, used by JRuby
@@ -69,12 +69,12 @@
     <dependency>
       <groupId>org.jruby.extras</groupId>
       <artifactId>bytelist</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.3</version>
     </dependency>
     <dependency>
       <groupId>org.jruby.jcodings</groupId>
       <artifactId>jcodings</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.2</version>
     </dependency>
     <dependency>
       <groupId>joda-time</groupId>

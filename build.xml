@@ -11,9 +11,21 @@
   <!-- And then load the defaults. It seems backwards to set defaults AFTER 
        setting local overrides, but that's how Ant works. -->
   <property file="default.build.properties"/>
+
+  <taskdef resource="tasks.properties">
+    <classpath>
+      <fileset dir="${lib.dir}" includes="**/*.jar" excludes="jvyamlb*.jar"/>
+    </classpath>
+  </taskdef>
   
   <path id="build.classpath">
-    <fileset dir="${lib.dir}" includes="*.jar" excludes="jvyamlb*.jar"/>
+    <fileset dir="${lib.dir}" includes="**/*.jar" excludes="jvyamlb*.jar"/>
+  </path>
+
+  <path id="test.classpath">
+    <fileset dir="${lib.dir}" includes="**/*.jar" excludes="jvyamlb*.jar"/>
+    <pathelement path="${jvyamlb.classes.dir}"/>
+    <pathelement path="${test.classes.dir}"/>
   </path>
 
   <patternset id="java.src.pattern">
@@ -28,6 +40,7 @@
     <mkdir dir="${test.results.dir}"/>
     <mkdir dir="${html.test.results.dir}"/>
     <mkdir dir="${test.classes.dir}"/>
+    <mkdir dir="${coverage.dir}"/>
   </target>
   
   <target name="compile" depends="prepare" description="Compile the source files for the project.">
@@ -48,13 +61,15 @@
     </javac>
   </target>
 
+  <target name="coverage.instrument" depends="compile" description="">
+    <cobertura-instrument todir="${coverage.classes.dir}">
+      <fileset dir="${jvyamlb.classes.dir}"/>
+    </cobertura-instrument>
+  </target>
+
   <target name="test" depends="compile-tests" description="Runs all tests">
     <junit>
-      <classpath refid="build.classpath"/>
-      <classpath>
-      	<pathelement location="${jvyamlb.classes.dir}"/>
-      	<pathelement location="${test.classes.dir}"/>
-      </classpath>
+      <classpath refid="test.classpath"/>
       <formatter type="brief" usefile="false"/>
       <batchtest>
         <fileset dir="${test.src.dir}">
@@ -66,11 +81,7 @@
 
   <target name="ci-test" depends="compile-tests" description="Runs all tests">
     <junit failureproperty="junit.failure">
-      <classpath refid="build.classpath"/>
-      <classpath>
-        <pathelement location="${jvyamlb.classes.dir}"/>
-        <pathelement location="${test.classes.dir}"/>
-      </classpath>
+      <classpath refid="test.classpath"/>
       <formatter type="brief" usefile="false" />
       <formatter type="xml"/>
       <batchtest todir="${test.results.dir}">
@@ -84,6 +95,22 @@
       <report format="frames" todir="${html.test.results.dir}"/>
     </junitreport>
     <fail if="junit.failure" message="Test(s) failed."/>
+  </target>
+
+  <target name="coverage" depends="coverage.instrument" description="Runs all ISpec tests using Cobertura and produces a report">
+    <junit fork="true" failureproperty="junit.failure">
+      <classpath path="${coverage.classes.dir}"/>
+      <classpath refid="test.classpath"/>
+      <formatter type="brief" usefile="false" />
+      <batchtest fork="yes" todir="${test.results.dir}">
+        <fileset dir="${test.src.dir}">
+          <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+    <fail if="junit.failure" message="Test(s) failed."/>
+
+    <cobertura-report srcdir="${main.src.dir}" destdir="${coverage.report.dir}"/>
   </target>
 
   <target name="jar" depends="test" description="Create the jvyaml.jar file">
@@ -102,6 +129,7 @@
     <tar destfile="${release.dir}/jvyamlb-bin-0.2.5.tar.gz" compression="gzip">
       <tarfileset dir="." prefix="jvyamlb-0.2.5">
         <include name="lib/**"/>
+        <exclude name="lib/build/**"/>
         <include name="docs/**"/>
         <include name="LICENSE"/>
         <include name="README"/>
@@ -114,6 +142,7 @@
     <tar destfile="${release.dir}/jvyamlb-src-0.2.5.tar.gz" compression="gzip">
       <tarfileset dir="." prefix="jvyamlb-0.2.5">
         <include name="lib/**"/>
+        <exclude name="lib/build/**"/>
         <include name="docs/**"/>
         <include name="src/**"/>
         <include name="build.xml"/>

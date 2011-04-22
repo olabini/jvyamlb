@@ -2,3 +2,5 @@
 rels
 prj.el
 lib/jvyamlb-*.jar
+pom.xml
+MANIFEST.MF

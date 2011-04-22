@@ -12,6 +12,8 @@
        setting local overrides, but that's how Ant works. -->
   <property file="default.build.properties"/>
 
+  <property file="version.properties"/>
+
   <taskdef resource="tasks.properties">
     <classpath>
       <fileset dir="${lib.dir}" includes="**/*.jar" excludes="jvyamlb*.jar"/>
@@ -31,6 +33,14 @@
   <patternset id="java.src.pattern">
     <include name="**/*.java"/>
   </patternset>
+
+  <target name="gen-pom" description="Creates new pom.xml files based on the current version configuration. This should be run before doing any Maven stuff">
+    <filter token="VERSION_NUMBER" value="${VERSION_NUMBER}"/>
+    <filter token="VERSION_ADDITION" value="${VERSION_ADDITION}"/>
+
+    <copy file="pom.xml.template" tofile="pom.xml" filtering="true" overwrite="true"/>
+    <copy file="MANIFEST.MF.template" tofile="MANIFEST.MF" filtering="true" overwrite="true"/>
+  </target>
 
   <target name="prepare" description="Creates the directories needed for building">
     <xmlproperty file="build-config.xml" keepRoot="false" collapseAttributes="true"/>
@@ -61,7 +71,23 @@
     </javac>
   </target>
 
+  <target name="ci-compile-tests" depends="prepare" description="Compile the test source files for the project.">
+    <javac destdir="${test.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}">
+      <classpath refid="build.classpath"/>
+      <classpath>
+        <pathelement location="${jvyamlb.classes.dir}"/>
+      </classpath>
+      <src path="${test.src.dir}"/>
+    </javac>
+  </target>
+
   <target name="coverage.instrument" depends="compile" description="">
+    <cobertura-instrument todir="${coverage.classes.dir}">
+      <fileset dir="${jvyamlb.classes.dir}"/>
+    </cobertura-instrument>
+  </target>
+
+  <target name="ci-coverage.instrument" depends="prepare" description="">
     <cobertura-instrument todir="${coverage.classes.dir}">
       <fileset dir="${jvyamlb.classes.dir}"/>
     </cobertura-instrument>
@@ -79,7 +105,7 @@
     </junit>
   </target>
 
-  <target name="ci-test" depends="compile-tests" description="Runs all tests">
+  <target name="ci-test" depends="ci-compile-tests" description="Runs all tests">
     <junit failureproperty="junit.failure">
       <classpath refid="test.classpath"/>
       <formatter type="brief" usefile="false" />
@@ -113,8 +139,36 @@
     <cobertura-report srcdir="${main.src.dir}" destdir="${coverage.report.dir}"/>
   </target>
 
+  <target name="ci-coverage" depends="ci-coverage.instrument" description="Runs all ISpec tests using Cobertura and produces a report">
+    <junit fork="true" failureproperty="junit.failure">
+      <classpath path="${coverage.classes.dir}"/>
+      <classpath refid="test.classpath"/>
+      <formatter type="brief" usefile="false" />
+      <batchtest fork="yes" todir="${test.results.dir}">
+        <fileset dir="${test.src.dir}">
+          <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+    <fail if="junit.failure" message="Test(s) failed."/>
+
+    <cobertura-report srcdir="${main.src.dir}" destdir="${coverage.report.dir}"/>
+  </target>
+
   <target name="jar" depends="test" description="Create the jvyaml.jar file">
-    <jar destfile="${lib.dir}/jvyamlb-0.2.5.jar">
+    <jar destfile="${lib.dir}/jvyamlb-${VERSION_NUMBER}${VERSION_ADDITION}.jar">
+      <fileset dir="${jvyamlb.classes.dir}">
+        <include name="**/*.class"/>
+        <include name="**/*.properties"/>
+      </fileset>
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="ci-jar" depends="prepare" description="Create the jvyaml.jar file">
+    <jar destfile="${lib.dir}/jvyamlb-${VERSION_NUMBER}${VERSION_ADDITION}.jar">
       <fileset dir="${jvyamlb.classes.dir}">
         <include name="**/*.class"/>
         <include name="**/*.properties"/>
@@ -126,8 +180,8 @@
   </target>
 	
   <target name="dist-bin" depends="jar">
-    <tar destfile="${release.dir}/jvyamlb-bin-0.2.5.tar.gz" compression="gzip">
-      <tarfileset dir="." prefix="jvyamlb-0.2.5">
+    <tar destfile="${release.dir}/jvyamlb-bin-${VERSION_NUMBER}${VERSION_ADDITION}.tar.gz" compression="gzip">
+      <tarfileset dir="." prefix="jvyamlb-${VERSION_NUMBER}${VERSION_ADDITION}">
         <include name="lib/**"/>
         <exclude name="lib/build/**"/>
         <include name="docs/**"/>
@@ -139,8 +193,8 @@
   </target>
   
   <target name="dist-src" depends="jar">
-    <tar destfile="${release.dir}/jvyamlb-src-0.2.5.tar.gz" compression="gzip">
-      <tarfileset dir="." prefix="jvyamlb-0.2.5">
+    <tar destfile="${release.dir}/jvyamlb-src-${VERSION_NUMBER}${VERSION_ADDITION}.tar.gz" compression="gzip">
+      <tarfileset dir="." prefix="jvyamlb-${VERSION_NUMBER}${VERSION_ADDITION}">
         <include name="lib/**"/>
         <exclude name="lib/build/**"/>
         <include name="docs/**"/>
@@ -158,6 +212,6 @@
 
   <target name="clean" depends="prepare" description="clean almost everything">
     <delete dir="${build.dir}"/>
-    <delete file="${lib.dir}/jvyamlb-0.2.5.jar" quiet="true"/>
+    <delete file="${lib.dir}/jvyamlb-${VERSION_NUMBER}${VERSION_ADDITION}.jar" quiet="true"/>
   </target>
 </project>

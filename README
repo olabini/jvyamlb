@@ -12,8 +12,15 @@ JvYAMLb is aimed at improving YAML performance in the JRuby project
 (http://jruby.sourceforge.net), but is also suitable for configuration
 and data storage in regular Java applications.
 
-JvYAMLb supports both 1.0 and 1.1 loading and dumping. 
+JvYAMLb supports both 1.0 and 1.1 loading and dumping.
 
+== Downloads
+
+In the years since JvYAMLb was last updated, it seems all existing places for downloads have disappeared. So for now, you can download the latest release here:
+
+  https://olabini.se/projects/jvyamlb/downloads/jvyamlb-0.2.6.jar
+  https://olabini.se/projects/jvyamlb/downloads/jvyamlb-bin-0.2.6.tar.gz
+  https://olabini.se/projects/jvyamlb/downloads/jvyamlb-src-0.2.6.tar.gz
 
 == Usage
 
@@ -60,11 +67,6 @@ behaviour by implementing the YAMLFactory interface. This is in fact
 the way JRuby returns RubyObjects instead of regular Java objects. A
 specialized JRubyConstructor is created, and when loading a
 JRubyYAMLFactory is created that uses this Constructor instead.
-
-
-== More information
-
-Visit http://jvyaml.dev.java.net for more information and updated versions
 
 
 == License

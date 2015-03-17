@@ -408,7 +408,7 @@ public class ScannerImpl implements Scanner {
     private void addToken(Token t) {
         this.tokens.add(t);
 
-        lastFlowControl =             
+        lastFlowControl =
             (t instanceof FlowMappingStartToken) ||
             (t instanceof FlowSequenceStartToken) ||
             (t instanceof ValueToken) ||
@@ -455,7 +455,7 @@ public class ScannerImpl implements Scanner {
         }
         return null;
     }
-    
+
     private class TokenIterator implements Iterator {
         public boolean hasNext() {
             return null != peekToken();
@@ -526,24 +526,24 @@ public class ScannerImpl implements Scanner {
         case '\'': return fetchSingle();
         case '"': return fetchDouble();
         case '?': if(this.flowLevel != 0 || NULL_BL_T_LINEBR[peek(1)]) { return fetchKey(); } break;
-        case ':': 
-            if((this.flowLevel != 0 || 
-                NULL_BL_T_LINEBR[peek(1)]) && 
-               !lastFlowControl) { 
-                return fetchValue(); 
-            } 
-            break;
-        case '%': if(colz) {return fetchDirective(); } break;
-        case '-': 
-            if((colz || docStart) && isEnding()) {
-                return fetchDocumentStart(); 
-            } else if(NULL_BL_T_LINEBR[peek(1)]) {
-                return fetchBlockEntry(); 
+        case ':':
+            if((this.flowLevel != 0 ||
+                NULL_BL_T_LINEBR[peek(1)]) &&
+               !lastFlowControl) {
+                return fetchValue();
             }
             break;
-        case '.': 
+        case '%': if(colz) {return fetchDirective(); } break;
+        case '-':
+            if((colz || docStart) && isEnding()) {
+                return fetchDocumentStart();
+            } else if(NULL_BL_T_LINEBR[peek(1)]) {
+                return fetchBlockEntry();
+            }
+            break;
+        case '.':
             if(colz && isStart()) {
-                return fetchDocumentEnd(); 
+                return fetchDocumentEnd();
             }
             break;
         case '[': return fetchFlowSequenceStart();
@@ -562,10 +562,10 @@ public class ScannerImpl implements Scanner {
         }
 
         //TODO: this is probably incorrect...
-        if(STUPID_CHAR[this.buffer.bytes[this.pointer]&0xFF] || 
-           (ensure(1,false) && (this.buffer.bytes[this.pointer] == '-' || 
-                                this.buffer.bytes[this.pointer] == '?' || 
-                                this.buffer.bytes[this.pointer] == ':') && 
+        if(STUPID_CHAR[this.buffer.bytes[this.pointer]&0xFF] ||
+           (ensure(1,false) && (this.buffer.bytes[this.pointer] == '-' ||
+                                this.buffer.bytes[this.pointer] == '?' ||
+                                this.buffer.bytes[this.pointer] == ':') &&
             !NULL_BL_T_LINEBR[this.buffer.bytes[this.pointer+1]&0xFF])) {
             return fetchPlain();
         }
@@ -589,7 +589,7 @@ public class ScannerImpl implements Scanner {
     protected DocumentEndToken getDocumentEnd() {
         return Token.DOCUMENT_END;
     }
-    
+
     protected BlockEndToken getBlockEnd() {
         return Token.BLOCK_END;
     }
@@ -705,7 +705,7 @@ public class ScannerImpl implements Scanner {
             }
         }
     }
-    
+
     private byte[] scanLineBreak() {
         // Transforms:
         //   '\r\n'      :   '\n'
@@ -737,7 +737,7 @@ public class ScannerImpl implements Scanner {
             addToken(getBlockEnd());
         }
     }
-    
+
     private Token fetchDocumentStart() {
         this.docStart = false;
         return fetchDocumentIndicator(getDocumentStart());
@@ -751,7 +751,7 @@ public class ScannerImpl implements Scanner {
         addToken(tok);
         return tok;
     }
-    
+
     private Token fetchBlockEntry() {
         this.docStart = false;
         if(this.flowLevel == 0) {
@@ -768,7 +768,7 @@ public class ScannerImpl implements Scanner {
         forward();
         addToken(t);
         return t;
-    }        
+    }
 
     private boolean addIndent(final int col) {
         if(this.indent < col) {
@@ -787,7 +787,7 @@ public class ScannerImpl implements Scanner {
         addToken(tok);
         return tok;
     }
-    
+
     private void removePossibleSimpleKey() {
         SimpleKey key = (SimpleKey)this.possibleSimpleKeys.remove(new Integer(this.flowLevel));
         if(key != null) {
@@ -807,7 +807,7 @@ public class ScannerImpl implements Scanner {
             this.possibleSimpleKeys.put(new Integer(this.flowLevel), getSimpleKey(this.tokensTaken+this.tokens.size(), (this.flowLevel == 0) && this.indent == this.column,-1,-1,this.column));
         }
     }
-    
+
     private Token scanTag() {
         startingItem();
         char ch = peek(1);
@@ -928,7 +928,7 @@ public class ScannerImpl implements Scanner {
 
     protected void possibleEnd() {
     }
-   
+
     private Token scanPlain() {
         startingItem();
         final ByteList chunks = new ByteList(7);
@@ -1011,7 +1011,7 @@ public class ScannerImpl implements Scanner {
                         return new ByteList(0);
                     }
                 }
-            }            
+            }
             if(!(lineBreak.length == 1 && lineBreak[0] == '\n')) {
                 chunks.append(lineBreak);
             } else if(breaks == null || breaks.realSize == 0) {
@@ -1027,11 +1027,11 @@ public class ScannerImpl implements Scanner {
     private Token fetchSingle() {
         return fetchFlowScalar('\'');
     }
-    
+
     private Token fetchDouble() {
         return fetchFlowScalar('"');
     }
-    
+
     private Token fetchFlowScalar(final char style) {
         this.docStart = false;
         savePossibleSimpleKey();
@@ -1040,7 +1040,7 @@ public class ScannerImpl implements Scanner {
         addToken(tok);
         return tok;
     }
-    
+
     private Token scanFlowScalar(final char style) {
         startingItem();
         final boolean dbl = style == '"';
@@ -1069,13 +1069,13 @@ public class ScannerImpl implements Scanner {
         HEXA_VALUES['7'] = 7;
         HEXA_VALUES['8'] = 8;
         HEXA_VALUES['9'] = 9;
-        HEXA_VALUES['A'] = 10; 
+        HEXA_VALUES['A'] = 10;
         HEXA_VALUES['B'] = 11;
         HEXA_VALUES['C'] = 12;
         HEXA_VALUES['D'] = 13;
         HEXA_VALUES['E'] = 14;
         HEXA_VALUES['F'] = 15;
-        HEXA_VALUES['a'] = 10; 
+        HEXA_VALUES['a'] = 10;
         HEXA_VALUES['b'] = 11;
         HEXA_VALUES['c'] = 12;
         HEXA_VALUES['d'] = 13;
@@ -1193,7 +1193,7 @@ public class ScannerImpl implements Scanner {
                 colz = false;
             } else {
                 return chunks;
-            }            
+            }
         }
     }
 
@@ -1246,11 +1246,11 @@ public class ScannerImpl implements Scanner {
     private Token fetchFlowSequenceEnd() {
         return fetchFlowCollectionEnd(getFlowSequenceEnd());
     }
-    
+
     private Token fetchFlowMappingEnd() {
         return fetchFlowCollectionEnd(getFlowMappingEnd());
     }
-    
+
     private Token fetchFlowCollectionEnd(final Token tok) {
         removePossibleSimpleKey();
         this.flowLevel--;
@@ -1259,7 +1259,7 @@ public class ScannerImpl implements Scanner {
         addToken(tok);
         return tok;
     }
-    
+
     private Token fetchFlowEntry() {
         this.allowSimpleKey = true;
         removePossibleSimpleKey();
@@ -1272,11 +1272,11 @@ public class ScannerImpl implements Scanner {
     private Token fetchLiteral() {
         return fetchBlockScalar('|');
     }
-    
+
     private Token fetchFolded() {
         return fetchBlockScalar('>');
     }
-    
+
     private Token fetchBlockScalar(final char style) {
         this.docStart = false;
         this.allowSimpleKey = true;
@@ -1377,7 +1377,7 @@ public class ScannerImpl implements Scanner {
         }
         return chunks;
     }
-    
+
 
     private Object[] scanBlockScalarIndentation() {
         final ByteList chunks = new ByteList();
@@ -1633,7 +1633,7 @@ public class ScannerImpl implements Scanner {
         }
         return value;
     }
-    
+
     private ByteList scanTagDirectivePrefix() {
         final ByteList value = scanTagUri("directive");
         if(!NULL_BL_LINEBR[peek()]) {
@@ -1682,7 +1682,7 @@ public class ScannerImpl implements Scanner {
         final long after = System.currentTimeMillis();
         final long time = after-before;
         final double timeS = (after-before)/1000.0;
-        System.out.println("Walking through the " + tokens + " tokens took " + time + "ms, or " + timeS + " seconds"); 
+        System.out.println("Walking through the " + tokens + " tokens took " + time + "ms, or " + timeS + " seconds");
     }
 */
 
@@ -1714,7 +1714,7 @@ public class ScannerImpl implements Scanner {
         final long after = System.currentTimeMillis();
         final long time = after-before;
         final double timeS = (after-before)/1000.0;
-        System.out.println("Walking through the " + tokens + " tokens took " + time + "ms, or " + timeS + " seconds"); 
+        System.out.println("Walking through the " + tokens + " tokens took " + time + "ms, or " + timeS + " seconds");
     }
 
     public static void tmain(final String[] args) throws Exception {
@@ -1735,6 +1735,6 @@ public class ScannerImpl implements Scanner {
         final long after = System.currentTimeMillis();
         final long time = after-before;
         final double timeS = (after-before)/1000.0;
-        System.out.println("Walking through the " + tokens + " tokens took " + time + "ms, or " + timeS + " seconds"); 
+        System.out.println("Walking through the " + tokens + " tokens took " + time + "ms, or " + timeS + " seconds");
     }
 }// Scanner

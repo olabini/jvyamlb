@@ -857,6 +857,7 @@ public class ScannerImpl implements Scanner {
             if('%' == ch) {
                 ensure(length,false);
                 chunks.append(this.buffer.bytes,this.pointer,length);
+                forward(length);
                 length = 0;
                 chunks.append(scanUriEscapes(name));
             } else {

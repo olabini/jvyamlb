@@ -34,7 +34,7 @@ public class YAMLLoadTest extends YAMLTestCase {
         assertLoad(str,"'str'");
         assertLoad(s("\u00fc"),"---\n\"\\xC3\\xBC\"");
     }
-    
+
     public void testBasicIntegerScalarLoad() throws Exception {
         assertLoad(new Long(47),"47");
         assertLoad(new Long(0),"0");
@@ -112,7 +112,7 @@ public class YAMLLoadTest extends YAMLTestCase {
     public void testNestedFlowMappingLoad() throws Exception {
         Map expectedInner = new HashMap();
         expectedInner.put(s("b"), s("c"));
-      
+
         Map expectedOuter = new HashMap();
         expectedOuter.put(s("a"), expectedInner);
 
@@ -130,5 +130,10 @@ public class YAMLLoadTest extends YAMLTestCase {
         expectedOuterList.add(expectedOuterMap);
 
         assertLoad(expectedOuterList, "[{a: {b: c}}]");
+    }
+
+    // NETBEANS-246124
+    public void testStrangeTagEntry() throws Exception {
+        assertEquals(new PrivateType("!tag: ab", "foo").toString().trim(),YAML.load(s("--- !tag:%20ab foo")).toString());
     }
 }// YAMLLoadTest
